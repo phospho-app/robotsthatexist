@@ -14,6 +14,7 @@ import type { ReviewFormProps } from "@/lib/types";
 export function ReviewForm({
   robotId,
   onReviewSubmitted,
+  mutateKey,
   existingReview,
 }: ReviewFormProps) {
   const { user, profile } = useAuth();
@@ -45,6 +46,42 @@ export function ReviewForm({
     }
 
     setIsSubmitting(true);
+
+    // Optimistic update for new reviews
+    if (!existingReview && mutateKey) {
+      try {
+        // Create optimistic review object
+        const optimisticReview = {
+          id: `optimistic-${Date.now()}`,
+          robot_id: robotId,
+          user_id: user.id,
+          rating,
+          comment: comment.trim(),
+          is_anonymous: isAnonymous,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          profiles: isAnonymous ? null : {
+            id: user.id,
+            username: profile.username,
+            full_name: profile.full_name,
+            avatar_url: profile.avatar_url,
+            github_username: profile.github_username
+          }
+        };
+
+        // Update the cache optimistically
+        mutate(mutateKey, (currentData: any) => {
+          if (!currentData) return currentData;
+          return {
+            ...currentData,
+            reviews: [optimisticReview, ...(currentData.reviews || [])]
+          };
+        }, false);
+      } catch (optimisticError) {
+        console.error("Optimistic update error:", optimisticError);
+        // Continue with the API call even if optimistic update fails
+      }
+    }
 
     try {
       if (existingReview) {
@@ -79,9 +116,14 @@ export function ReviewForm({
         }
       }
 
-      // Revalidate reviews data
+      // Revalidate reviews data to get the real review from the server
       try {
-        await mutate(`reviews-${robotId}`);
+        if (mutateKey) {
+          // Force revalidation to replace optimistic data with real data
+          await mutate(mutateKey);
+        } else {
+          await mutate(`reviews-${robotId}`);
+        }
       } catch (mutateError) {
         console.error("SWR mutate error:", mutateError);
         // Don't throw here, the review was saved successfully
@@ -97,6 +139,15 @@ export function ReviewForm({
       }
     } catch (error: any) {
       console.error("Error submitting story:", error);
+      
+      // Revert optimistic update on error
+      if (!existingReview && mutateKey) {
+        try {
+          await mutate(mutateKey);
+        } catch (revertError) {
+          console.error("Error reverting optimistic update:", revertError);
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }

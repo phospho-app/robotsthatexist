@@ -185,6 +185,7 @@ export interface RobotFileListProps {
 export interface ReviewFormProps {
   robotId: string;
   onReviewSubmitted?: () => void;
+  mutateKey?: string;
   existingReview?: {
     id: string;
     rating: number;

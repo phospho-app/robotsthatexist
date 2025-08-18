@@ -1006,6 +1006,7 @@ export default function RobotDetailClient({
               <ReviewForm
                 robotId={robot.id}
                 existingReview={userReview}
+                mutateKey={`robot-with-data-${slug}`}
                 onReviewSubmitted={() => setShowReviewForm(false)}
               />
             </div>
