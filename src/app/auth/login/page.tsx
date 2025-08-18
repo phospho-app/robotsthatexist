@@ -22,7 +22,7 @@ export default function Login() {
             Welcome to robots that exist
           </CardTitle>
           <CardDescription>
-            Sign in with GitHub to leave reviews
+            Sign in with GitHub to share stories.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

@@ -49,44 +49,23 @@ export function RobotForm({
           <CardTitle>Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="name">
-                Robot Name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="name"
-                placeholder="Enter robot name"
-                value={formData.name}
-                onChange={(e) => updateFormData('name', e.target.value)}
-                required
-                disabled={disabled}
-              />
-              {formData.name && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Slug: {generateSlug(formData.name)}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="status">
-                Status <span className="text-destructive">*</span>
-              </Label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(value) => updateFormData('status', value)}
-                disabled={disabled}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label htmlFor="name">
+              Robot Name <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="name"
+              placeholder="Enter robot name"
+              value={formData.name}
+              onChange={(e) => updateFormData('name', e.target.value)}
+              required
+              disabled={disabled}
+            />
+            {formData.name && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Slug: {generateSlug(formData.name)}
+              </p>
+            )}
           </div>
 
           <div>

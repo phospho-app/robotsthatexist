@@ -37,7 +37,7 @@ export default function CreateRobotPage() {
     description: "",
     github_url: "",
     image_url: "",
-    status: "draft" as "draft" | "published",
+    status: "published" as "draft" | "published",
   });
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -186,26 +186,6 @@ export default function CreateRobotPage() {
                 )}
               </div>
 
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      status: value as "draft" | "published",
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             <div>

@@ -33,7 +33,7 @@ export function validateRobotForm(formData: RobotFormData): { isValid: boolean; 
   }
 
   if (!formData.status || (formData.status !== 'draft' && formData.status !== 'published')) {
-    errors.push('Please select a valid status (Draft or Published)')
+    errors.push('Please select a valid status (Published)')
   }
 
   if (!formData.github_url.trim()) {
@@ -71,6 +71,6 @@ export function getInitialFormData(): RobotFormData {
     description: '',
     github_url: '',
     image_url: '',
-    status: 'draft'
+    status: 'published'
   }
 }

@@ -420,7 +420,7 @@ export default function RobotDetailClient({
                     </div>
                     <span className="text-muted-foreground">
                       ({reviews.length}{" "}
-                      {reviews.length === 1 ? "review" : "reviews"})
+                      {reviews.length === 1 ? "story" : "stories"})
                     </span>
                   </div>
                 ) : (
@@ -981,7 +981,7 @@ export default function RobotDetailClient({
         <div>
           <h2 className="text-2xl font-bold mb-4 flex items-center">
             <Star className="h-6 w-6 mr-2" />
-            stories ({reviews.length})
+            Stories ({reviews.length})
           </h2>
           {/* Review Form */}
           {user && !userReview && !showReviewForm && (
@@ -1067,7 +1067,7 @@ export default function RobotDetailClient({
                               )}
                               {isCurrentUserReview && (
                                 <Badge variant="secondary" className="text-xs">
-                                  Your Review
+                                  Your Story
                                 </Badge>
                               )}
                             </h4>

@@ -98,7 +98,7 @@ export function useRobotForm({ robotId, mode }: UseRobotFormOptions) {
             description: robot.description || '',
             github_url: robot.github_url || '',
             image_url: robot.image_url || '',
-            status: robot.status || 'draft'
+            status: 'published'
           },
           tags: robot.tags || [],
           socialLinks: socialLinks || [],
@@ -182,7 +182,7 @@ export function useRobotForm({ robotId, mode }: UseRobotFormOptions) {
           description: robot.description || '',
           github_url: robot.github_url || '',
           image_url: robot.image_url || '',
-          status: robot.status || 'draft'
+          status: 'published'
         },
         tags: robot.tags || [],
         socialLinks: socialLinks || [],

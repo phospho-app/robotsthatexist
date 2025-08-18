@@ -46,16 +46,12 @@ import {
   Calendar,
   User,
   Github,
-  CheckCircle,
-  XCircle,
   AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
-import { mutate } from "swr";
-import type { RobotCardData } from "@/lib/types";
 
 const robotsFetcher = async (key: string) => {
-  const [, searchQuery, statusFilter, sortBy] = key.split("|");
+  const [, searchQuery, , sortBy] = key.split("|");
 
   let query = supabase.from("robots").select(`
       *,
@@ -74,18 +70,11 @@ const robotsFetcher = async (key: string) => {
     );
   }
 
-  // Apply status filter
-  if (statusFilter && statusFilter !== "all") {
-    query = query.eq("status", statusFilter);
-  }
 
   // Apply sorting
   switch (sortBy) {
     case "name":
       query = query.order("name", { ascending: true });
-      break;
-    case "status":
-      query = query.order("status", { ascending: true });
       break;
     case "created":
       query = query.order("created_at", { ascending: false });
@@ -106,7 +95,6 @@ const robotsFetcher = async (key: string) => {
 export default function AdminRobotsPage() {
   const { user, profile, loading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("updated");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
@@ -121,7 +109,7 @@ export default function AdminRobotsPage() {
     isLoading,
     mutate: mutateRobots,
   } = useSWR(
-    `admin-robots|${searchQuery}|${statusFilter}|${sortBy}`,
+    `admin-robots|${searchQuery}||${sortBy}`,
     robotsFetcher,
     {
       revalidateOnFocus: false,
@@ -150,25 +138,6 @@ export default function AdminRobotsPage() {
       alert(`Failed to delete robot: ${error.message}`);
     } finally {
       setIsDeleting(null);
-    }
-  };
-
-  const handleStatusChange = async (
-    robotId: string,
-    newStatus: "draft" | "published"
-  ) => {
-    try {
-      const { error } = await supabase
-        .from("robots")
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq("id", robotId);
-
-      if (error) throw error;
-
-      // Revalidate the robots list
-      await mutateRobots();
-    } catch (error: any) {
-      console.error("Error updating robot status:", error);
     }
   };
 
@@ -202,28 +171,6 @@ export default function AdminRobotsPage() {
       </div>
     );
   }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "published":
-        return <CheckCircle className="h-4 w-4 text-primary" />;
-      case "draft":
-        return <XCircle className="h-4 w-4 text-gray-400" />;
-      default:
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "published":
-        return <Badge className="bg-primary/10 text-primary">Published</Badge>;
-      case "draft":
-        return <Badge variant="secondary">Draft</Badge>;
-      default:
-        return <Badge variant="destructive">{status}</Badge>;
-    }
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -261,17 +208,6 @@ export default function AdminRobotsPage() {
               />
             </div>
 
-            {/* Status Filter */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full lg:w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-              </SelectContent>
-            </Select>
 
             {/* Sort By */}
             <Select value={sortBy} onValueChange={setSortBy}>
@@ -282,7 +218,6 @@ export default function AdminRobotsPage() {
                 <SelectItem value="updated">Last Updated</SelectItem>
                 <SelectItem value="created">Date Created</SelectItem>
                 <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="status">Status</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -303,12 +238,11 @@ export default function AdminRobotsPage() {
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40%]">Robot</TableHead>
-              <TableHead className="w-[20%]">Creator</TableHead>
-              <TableHead className="w-[12%]">Status</TableHead>
-              <TableHead className="w-[10%]">Created</TableHead>
-              <TableHead className="w-[10%]">Updated</TableHead>
-              <TableHead className="w-[8%] text-right">Actions</TableHead>
+              <TableHead className="w-[50%]">Robot</TableHead>
+              <TableHead className="w-[25%]">Creator</TableHead>
+              <TableHead className="w-[12%]">Created</TableHead>
+              <TableHead className="w-[12%]">Updated</TableHead>
+              <TableHead className="w-[11%] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -323,9 +257,6 @@ export default function AdminRobotsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="animate-pulse h-4 bg-gray-200 rounded w-24"></div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="animate-pulse h-6 bg-gray-200 rounded w-20"></div>
                   </TableCell>
                   <TableCell>
                     <div className="animate-pulse h-4 bg-gray-200 rounded w-24"></div>
@@ -346,7 +277,10 @@ export default function AdminRobotsPage() {
                       <div className="font-medium break-words">
                         {robot.name}
                       </div>
-                      <div className="text-sm text-muted-foreground break-words truncate" title={robot.description}>
+                      <div
+                        className="text-sm text-muted-foreground break-words truncate"
+                        title={robot.description}
+                      >
                         {robot.description}
                       </div>
                       <div className="flex flex-wrap gap-1">
@@ -392,30 +326,6 @@ export default function AdminRobotsPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="pt-1">
-                      <Select
-                        value={robot.status}
-                        onValueChange={(value) =>
-                          handleStatusChange(
-                            robot.id,
-                            value as "draft" | "published"
-                          )
-                        }
-                      >
-                        <SelectTrigger className="w-32">
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(robot.status)}
-                            <SelectValue />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="published">Published</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </TableCell>
-                  <TableCell>
                     <div className="flex items-start gap-1 text-sm text-muted-foreground pt-1">
                       <Calendar className="h-3 w-3 mt-0.5" />
                       {new Date(robot.created_at).toLocaleDateString()}
@@ -435,7 +345,13 @@ export default function AdminRobotsPage() {
                         </Link>
                       </Button>
                       <Button size="sm" variant="ghost" asChild>
-                        <Link href={`/admin/robots/${robot.id}/edit?returnTo=${encodeURIComponent('/admin/robots')}`}>
+                        <Link
+                          href={`/admin/robots/${
+                            robot.id
+                          }/edit?returnTo=${encodeURIComponent(
+                            "/admin/robots"
+                          )}`}
+                        >
                           <Edit className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -456,7 +372,7 @@ export default function AdminRobotsPage() {
                             <AlertDialogDescription>
                               Are you sure you want to delete "{robot.name}"?
                               This action cannot be undone and will also delete
-                              all associated reviews and files.
+                              all associated stories, links and files.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -485,7 +401,7 @@ export default function AdminRobotsPage() {
                       No robots found
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      {searchQuery || statusFilter !== "all"
+                      {searchQuery
                         ? "Try adjusting your filters to see more results."
                         : "Get started by creating your first robot."}
                     </p>

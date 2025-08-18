@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Create rich description
   const ratingText =
     reviewCount > 0
-      ? ` ⭐ ${averageRating.toFixed(1)}/5 (${reviewCount} reviews)`
+      ? ` ⭐ ${averageRating.toFixed(1)}/5 (${reviewCount} stories)`
       : "";
 
   const tagsText =
@@ -177,7 +177,7 @@ export default async function RobotDetailPage({ params }: Props) {
             {reviews.slice(0, 3).map((review) => (
               <div key={review.id}>
                 <div>Rating: {review.rating}/5</div>
-                <div>Review: {review.comment}</div>
+                <div>Story: {review.comment}</div>
                 <div>
                   By:{" "}
                   {review.profiles?.full_name ||
