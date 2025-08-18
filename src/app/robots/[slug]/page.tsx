@@ -117,7 +117,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: robotUrl,
     },
     other: {
-      "theme-color": "#22c55e",
+      "theme-color": "#00ff7f",
       "apple-mobile-web-app-capable": "yes",
       "apple-mobile-web-app-status-bar-style": "default",
     },

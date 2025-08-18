@@ -10,12 +10,12 @@ export default function NotFound() {
       <div className="max-w-2xl mx-auto text-center">
         {/* Robot Icon */}
         <div className="mb-8">
-          <Bot className="w-24 h-24 text-green-500 mx-auto mb-4" />
+          <Bot className="w-24 h-24 text-primary mx-auto mb-4" />
         </div>
 
         {/* Error Message */}
         <div className="mb-8">
-          <h1 className="text-6xl font-bold text-green-500 mb-4">404</h1>
+          <h1 className="text-6xl font-bold text-primary mb-4">404</h1>
           <h2 className="text-3xl font-bold mb-4">Robot Not Found</h2>
           <p className="text-xl text-muted-foreground mb-6 max-w-md mx-auto">
             Looks like this robot has gone rogue! The page you're looking for doesn't exist in our catalog.
@@ -24,7 +24,7 @@ export default function NotFound() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg" className="bg-green-500 hover:bg-green-600">
+          <Button asChild size="lg">
             <Link href="/">
               <Home className="w-5 h-5 mr-2" />
               Back to Home

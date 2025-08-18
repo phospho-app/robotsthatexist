@@ -206,7 +206,7 @@ export default function AdminRobotsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "published":
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-primary" />;
       case "draft":
         return <XCircle className="h-4 w-4 text-gray-400" />;
       default:
@@ -217,7 +217,7 @@ export default function AdminRobotsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "published":
-        return <Badge className="bg-green-100 text-green-800">Published</Badge>;
+        return <Badge className="bg-primary/10 text-primary">Published</Badge>;
       case "draft":
         return <Badge variant="secondary">Draft</Badge>;
       default:

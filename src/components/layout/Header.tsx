@@ -23,8 +23,8 @@ export function Header() {
         {/* Logo and Navigation */}
         <div className="flex items-center space-x-8">
           <Link href="/robots" className="flex items-center space-x-2">
-            <Bot className="h-6 w-6 text-green-500" />
-            <span className="font-bold text-xl text-green-500">
+            <Bot className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl text-primary">
               robots that exist
             </span>
           </Link>

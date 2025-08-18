@@ -132,7 +132,7 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8">
       {/* Hero Section */}
       <section className="text-center py-4 mb-8">
-        <h1 className="text-4xl text-green-500 md:text-6xl font-bold pb-6">
+        <h1 className="text-4xl text-primary md:text-6xl font-bold pb-6">
           Learn about robots that <i>actually</i> exist.
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">

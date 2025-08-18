@@ -111,13 +111,13 @@ export const metadata: Metadata = {
   category: "technology",
   classification: "Robotics Community Platform",
   other: {
-    "theme-color": "#22c55e",
+    "theme-color": "#00ff7f",
     "color-scheme": "dark light",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
     "apple-mobile-web-app-title": "Robots That Exist",
     "application-name": "Robots That Exist",
-    "msapplication-TileColor": "#22c55e",
+    "msapplication-TileColor": "#00ff7f",
   },
 };
 

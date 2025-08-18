@@ -115,8 +115,8 @@ export default function AdminSeedPage() {
                   <div key={index} className="flex items-start gap-3">
                     {result.success && (
                       <>
-                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <p className="text-green-700 dark:text-green-400">{result.success}</p>
+                        <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                        <p className="text-primary">{result.success}</p>
                       </>
                     )}
                     {result.error && (
