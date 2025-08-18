@@ -427,7 +427,7 @@ export default function RobotDetailClient({
                   <div className="flex items-center space-x-1 p-2">
                     <Star className="h-4 w-4" />
                     <span className="text-muted-foreground">
-                      No war stories yet.
+                      No stories yet.
                     </span>
                   </div>
                 )}
@@ -750,7 +750,7 @@ export default function RobotDetailClient({
                               <X className="h-3 w-3" />
                             </Button>
                           )}
-                          
+
                           <div className="flex flex-col space-y-3">
                             <div className="flex items-center space-x-3">
                               <div className="p-2 bg-blue-500 rounded-lg">
@@ -819,7 +819,7 @@ export default function RobotDetailClient({
                                 <X className="h-3 w-3" />
                               </Button>
                             )}
-                            
+
                             <div className="flex flex-col space-y-3">
                               <div className="flex items-center space-x-3">
                                 <div className="p-1.5 bg-red-500 rounded-lg">
@@ -882,7 +882,7 @@ export default function RobotDetailClient({
                                 <X className="h-3 w-3" />
                               </Button>
                             )}
-                            
+
                             <div className="flex flex-col space-y-3">
                               <div className="flex items-center space-x-3">
                                 <div className="p-1.5 bg-sky-500 rounded-lg">
@@ -933,7 +933,7 @@ export default function RobotDetailClient({
                             <X className="h-3 w-3" />
                           </Button>
                         )}
-                        
+
                         <div className="flex flex-col space-y-3">
                           <div className="flex items-center space-x-3">
                             <div className="p-1.5 bg-gray-500 rounded-lg">
@@ -981,14 +981,14 @@ export default function RobotDetailClient({
         <div>
           <h2 className="text-2xl font-bold mb-4 flex items-center">
             <Star className="h-6 w-6 mr-2" />
-            War stories ({reviews.length})
+            stories ({reviews.length})
           </h2>
           {/* Review Form */}
           {user && !userReview && !showReviewForm && (
             <div className="text-center mb-6">
               <Button onClick={() => setShowReviewForm(true)}>
                 <Star className="h-4 w-4 mr-2" />
-                Write a War Story
+                Write a story
               </Button>
             </div>
           )}
@@ -996,7 +996,7 @@ export default function RobotDetailClient({
           {user && userReview && !showReviewForm && (
             <div className="text-center mb-6">
               <Button variant="outline" onClick={() => setShowReviewForm(true)}>
-                Edit Your War Story
+                Edit Your story
               </Button>
             </div>
           )}
@@ -1118,7 +1118,7 @@ export default function RobotDetailClient({
             <Card>
               <CardContent className="pt-6">
                 <p className="text-muted-foreground text-center mb-4">
-                  No war stories yet. Sign in to be the first to share your
+                  No stories yet. Sign in to be the first to share your
                   experience with this robot!
                 </p>
                 <div className="text-center">
@@ -1132,7 +1132,7 @@ export default function RobotDetailClient({
             <Card>
               <CardContent className="pt-6">
                 <p className="text-muted-foreground text-center mb-4">
-                  No war stories yet. Be the first to share your experience with
+                  No stories yet. Be the first to share your experience with
                   this robot!
                 </p>
               </CardContent>

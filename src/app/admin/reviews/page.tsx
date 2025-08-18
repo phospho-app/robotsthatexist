@@ -94,8 +94,8 @@ const reviewsFetcher = async (key: string) => {
 
   // For non-anonymous reviews, fetch profile data separately
   const nonAnonymousUserIds = reviews
-    .filter(review => !review.is_anonymous)
-    .map(review => review.user_id);
+    .filter((review) => !review.is_anonymous)
+    .map((review) => review.user_id);
 
   let profilesData: any[] = [];
   if (nonAnonymousUserIds.length > 0) {
@@ -103,16 +103,16 @@ const reviewsFetcher = async (key: string) => {
       .from("profiles")
       .select("id, username, full_name, avatar_url, github_username")
       .in("id", nonAnonymousUserIds);
-    
+
     profilesData = profilesResult.data || [];
   }
 
   // Attach profile data only to non-anonymous reviews
-  const reviewsWithProfiles = reviews.map(review => ({
+  const reviewsWithProfiles = reviews.map((review) => ({
     ...review,
-    profiles: review.is_anonymous 
-      ? null 
-      : profilesData.find(profile => profile.id === review.user_id)
+    profiles: review.is_anonymous
+      ? null
+      : profilesData.find((profile) => profile.id === review.user_id),
   }));
 
   return reviewsWithProfiles;
@@ -355,9 +355,15 @@ export default function AdminReviewsPage() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={review.is_anonymous ? "" : review.profiles?.avatar_url || ""} />
+                        <AvatarImage
+                          src={
+                            review.is_anonymous
+                              ? ""
+                              : review.profiles?.avatar_url || ""
+                          }
+                        />
                         <AvatarFallback className="text-xs">
-                          {review.is_anonymous 
+                          {review.is_anonymous
                             ? "A"
                             : review.profiles?.full_name?.charAt(0) ||
                               review.profiles?.username?.charAt(0) ||
@@ -385,11 +391,12 @@ export default function AdminReviewsPage() {
                             "User"
                           )}
                         </div>
-                        {!review.is_anonymous && review.profiles?.github_username && (
-                          <div className="text-xs text-muted-foreground truncate">
-                            @{review.profiles.github_username}
-                          </div>
-                        )}
+                        {!review.is_anonymous &&
+                          review.profiles?.github_username && (
+                            <div className="text-xs text-muted-foreground truncate">
+                              @{review.profiles.github_username}
+                            </div>
+                          )}
                       </div>
                     </div>
                   </TableCell>
@@ -462,12 +469,12 @@ export default function AdminReviewsPage() {
                   <div className="flex flex-col items-center">
                     <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">
-                      No war stories found
+                      No stories found
                     </h3>
                     <p className="text-muted-foreground">
                       {searchQuery || ratingFilter !== "all"
                         ? "Try adjusting your filters to see more results."
-                        : "No war stories have been submitted yet."}
+                        : "No stories have been submitted yet."}
                     </p>
                   </div>
                 </TableCell>

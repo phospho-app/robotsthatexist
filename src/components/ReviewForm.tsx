@@ -30,7 +30,7 @@ export function ReviewForm({
       <Card>
         <CardContent className="pt-6">
           <p className="text-center text-muted-foreground">
-            Please sign in to share a war story.
+            Please sign in to share a story.
           </p>
         </CardContent>
       </Card>
@@ -106,7 +106,7 @@ export function ReviewForm({
     <Card>
       <CardHeader>
         <CardTitle>
-          {existingReview ? "Update Your War Story" : "Write a War Story"}
+          {existingReview ? "Update Your story" : "Write a story"}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -193,8 +193,8 @@ export function ReviewForm({
                   ? "Updating..."
                   : "Submitting..."
                 : existingReview
-                ? "Update War Story"
-                : "Submit War Story"}
+                ? "Update story"
+                : "Submit story"}
             </Button>
             {existingReview && onReviewSubmitted && (
               <Button

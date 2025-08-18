@@ -112,7 +112,7 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-@import 'github-markdown-css/github-markdown-dark.css';
+@import "github-markdown-css/github-markdown-dark.css";
 
 @layer base {
   * {
@@ -130,7 +130,7 @@
   max-width: 980px;
   margin: 0 auto;
   padding: 0;
-  
+
   /* Override GitHub's dark theme to match our app's dark theme */
   background-color: transparent !important;
   color: oklch(var(--foreground)) !important;
@@ -188,7 +188,7 @@
   background-color: oklch(var(--border)) !important;
 }
 
-/* Custom styles for war story markdown rendering */
+/* Custom styles for story markdown rendering */
 .war-story-markdown {
   line-height: 1.6;
 }

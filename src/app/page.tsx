@@ -136,8 +136,8 @@ export default function Home() {
           Learn about robots that <i>actually</i> exist.
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-          Discover real-world robots, read war stories, share learning
-          resources, and connect with the community.
+          Discover real-world robots, read stories, share learning resources,
+          and connect with the community.
         </p>
 
         {/* Search Bar */}

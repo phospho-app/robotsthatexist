@@ -76,8 +76,7 @@ export function RobotCard({ robot }: RobotCardProps) {
                 </div>
                 <span className="text-sm text-muted-foreground">
                   ({reviewStats.review_count}{" "}
-                  {reviewStats.review_count === 1 ? "war story" : "war stories"}
-                  )
+                  {reviewStats.review_count === 1 ? "story" : "stories"})
                 </span>
               </div>
             )}
