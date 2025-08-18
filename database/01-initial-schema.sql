@@ -203,6 +203,18 @@ CREATE POLICY "Public profiles are viewable by everyone"
 CREATE POLICY "Users can update own profile" 
   ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
+CREATE POLICY "Admins can update all profiles"
+  ON public.profiles FOR UPDATE 
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid() 
+      AND p.role = 'admin'
+      LIMIT 1
+    )
+  )
+  WITH CHECK (true);
+
 -- ============================================
 -- ROBOTS POLICIES
 -- ============================================
@@ -385,6 +397,43 @@ CREATE POLICY "Admins can manage all reviews"
       WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
     )
   );
+
+-- ============================================================================
+-- ADMIN ROLE UPDATE FUNCTION (Fixes RLS Recursion)
+-- ============================================================================
+
+-- Secure function to update user roles without RLS recursion issues
+CREATE OR REPLACE FUNCTION public.update_user_role(
+  target_user_id uuid,
+  new_role user_role
+) RETURNS void AS $$
+BEGIN
+  -- Security check: only admins can call this function
+  IF NOT EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND role = 'admin'
+  ) THEN
+    RAISE EXCEPTION 'Access denied. Only admins can update user roles.';
+  END IF;
+  
+  -- Prevent self-role change
+  IF target_user_id = auth.uid() THEN
+    RAISE EXCEPTION 'You cannot change your own role.';
+  END IF;
+  
+  -- Update the role using SECURITY DEFINER to bypass RLS
+  UPDATE public.profiles 
+  SET role = new_role, updated_at = now()
+  WHERE id = target_user_id;
+  
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'User not found.';
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION public.update_user_role(uuid, user_role) TO authenticated;
 
 -- ============================================================================
 -- SUCCESS MESSAGE
