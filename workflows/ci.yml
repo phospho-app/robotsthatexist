@@ -1,0 +1,92 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: "18"
+
+jobs:
+  # ============================================================================
+  # LINT & TEST JOB
+  # ============================================================================
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Run test coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+  # ============================================================================
+  # DATABASE MIGRATION JOB (Production only)
+  # ============================================================================
+  migrate:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Run database migrations
+        run: |
+          # Check if there are new migration files
+          if [ -n "$(find database/migrations -name "*.sql" -newer .last-migration 2>/dev/null || echo "first-run")" ]; then
+            echo "🔄 Running database migrations..."
+            
+            # Apply migrations in order
+            for migration in database/migrations/*.sql; do
+              if [ -f "$migration" ]; then
+                echo "Applying migration: $migration"
+                psql "$DATABASE_URL" -f "$migration"
+              fi
+            done
+            
+            # Update timestamp
+            touch .last-migration
+            
+            echo "✅ Database migrations completed"
+          else
+            echo "ℹ️ No new migrations to apply"
+          fi
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
