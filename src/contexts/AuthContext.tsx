@@ -93,18 +93,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null)
       
       // Handle different auth events
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_EXPIRED') {
+      if (event === 'SIGNED_OUT') {
         setProfile(null)
         setLoading(false)
         return
       }
       
+      // Handle session changes (including token expiration when session becomes null)
       if (session?.user) {
         const profileData = await fetchProfile(session.user.id)
         if (mounted) {
           setProfile(profileData)
         }
       } else {
+        // Session is null - could be sign out, token expiration, or no initial session
         setProfile(null)
       }
       

@@ -195,14 +195,9 @@ export default function EditRobotPage() {
 
       // Success - redirect based on returnTo parameter
       if (returnTo.startsWith('/robots/')) {
-        // If coming from robot page, update the URL to new slug if it changed
-        const robotPagePattern = /^\/robots\/([^/?]+)$/
-        const match = returnTo.match(robotPagePattern)
-        if (match && match[1] !== newSlug) {
-          router.push(`/robots/${newSlug}`)
-        } else {
-          router.push(returnTo)
-        }
+        // If coming from robot page, always redirect to the current slug
+        // This handles cases where the slug might have changed
+        router.push(`/robots/${newSlug}`)
       } else {
         router.push(returnTo)
       }
