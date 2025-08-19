@@ -407,15 +407,8 @@ export default function RobotDetailClient({
               ))}
             </div>
 
-            {/* Budget */}
-            {robot.budget && (
-              <div className="mb-4">
-                <BudgetDisplay budget={robot.budget} className="text-lg" />
-              </div>
-            )}
-
-            {/* Rating and Quick Links Row */}
-            <div className="flex items-center justify-start gap-x-2 mb-4">
+            {/* Rating, Budget and Quick Links Row */}
+            <div className="flex items-center justify-start gap-x-4 mb-4">
               <div className="flex items-center space-x-4">
                 {/* Rating */}
                 {reviews.length > 0 ? (
@@ -440,6 +433,11 @@ export default function RobotDetailClient({
                   </div>
                 )}
               </div>
+
+              {/* Budget */}
+              {robot.budget && (
+                <BudgetDisplay budget={robot.budget} />
+              )}
 
               {/* Quick Links */}
               <div className="flex items-center space-x-3">

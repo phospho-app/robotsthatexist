@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { RobotForm } from '@/components/forms/RobotForm'
 import { useRobotForm } from '@/hooks/useRobotForm'
 import { generateSlug } from '@/lib/robotFormUtils'
+import { mutate } from 'swr'
 
 export default function EditRobotPage() {
   const { user, profile, loading } = useAuth()
@@ -155,6 +156,7 @@ export default function EditRobotPage() {
         description: formData.description.trim(),
         github_url: formData.github_url.trim() || null,
         image_url: formData.image_url.trim() || null,
+        budget: formData.budget.trim(),
         status: formData.status,
         tags,
         updated_at: new Date().toISOString()
@@ -176,6 +178,17 @@ export default function EditRobotPage() {
           platform: link.platform || null
         }))
       }, false)
+
+      // Also invalidate robot detail page cache if slug changed
+      if (robotData?.robot.slug !== newSlug) {
+        // Invalidate old slug cache
+        await mutate(`robot-${robotData?.robot.slug}`, undefined, false)
+        // Invalidate new slug cache  
+        await mutate(`robot-${newSlug}`, undefined, false)
+      } else {
+        // Invalidate current slug cache
+        await mutate(`robot-${newSlug}`, undefined, false)
+      }
 
       // Success - redirect based on returnTo parameter
       if (returnTo.startsWith('/robots/')) {
