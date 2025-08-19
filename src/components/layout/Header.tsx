@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,11 +21,22 @@ import {
   BotIcon,
   PlusCircle,
   Plus,
+  Menu,
+  X,
 } from "lucide-react";
 import { RobotSearch } from "@/components/RobotSearch";
 
 export function Header() {
   const { user, profile, signOut, loading } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -76,8 +88,23 @@ export function Header() {
           <RobotSearch />
         </div>
 
-        {/* User Menu */}
+        {/* User Menu and Mobile Menu Button */}
         <div className="flex items-center space-x-4">
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={toggleMobileMenu}
+            aria-label="Toggle mobile menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-6 w-6 transition-transform duration-200 ease-in-out rotate-0" />
+            ) : (
+              <Menu className="h-6 w-6 transition-transform duration-200 ease-in-out" />
+            )}
+          </Button>
+
           {loading ? (
             <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
           ) : user && profile ? (
@@ -125,6 +152,53 @@ export function Header() {
             </Button>
           )}
         </div>
+      </div>
+
+      {/* Mobile Navigation Menu */}
+      <div className={`lg:hidden border-t bg-background/95 backdrop-blur transition-all duration-300 ease-in-out overflow-hidden ${
+        isMobileMenuOpen 
+          ? 'max-h-96 opacity-100' 
+          : 'max-h-0 opacity-0'
+      }`}>
+        <nav className="container mx-auto px-4 py-4 space-y-4">
+          <div className="md:hidden mb-4">
+            <RobotSearch />
+          </div>
+          
+          <Link
+            href="/"
+            className="block text-sm font-medium transition-colors hover:text-primary py-2"
+            onClick={closeMobileMenu}
+          >
+            Home
+          </Link>
+          <Link
+            href="/robots"
+            className="block text-sm font-medium transition-colors hover:text-primary py-2"
+            onClick={closeMobileMenu}
+          >
+            All Robots
+          </Link>
+          <Link
+            href="/create"
+            className="block text-sm font-medium transition-colors hover:text-primary py-2 flex items-center"
+            onClick={closeMobileMenu}
+          >
+            <Plus className="inline size-3 mr-2" />
+            <BotIcon className="inline size-4 mr-2" />
+            Add Robot
+          </Link>
+          {profile?.role === "admin" && (
+            <Link
+              href="/admin"
+              className="block text-sm font-medium transition-colors hover:text-primary py-2 flex items-center"
+              onClick={closeMobileMenu}
+            >
+              <Shield className="inline h-4 w-4 mr-2" />
+              Admin
+            </Link>
+          )}
+        </nav>
       </div>
     </header>
   );
