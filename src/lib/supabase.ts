@@ -4,13 +4,27 @@ import { toast } from 'sonner'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
+// Generate unique storage key per tab to prevent multi-tab conflicts
+const generateTabStorageKey = () => {
+  if (typeof window === 'undefined') return 'supabase.auth.token'
+  
+  // Check if we already have a tab ID in sessionStorage
+  let tabId = sessionStorage.getItem('supabase.tab.id')
+  if (!tabId) {
+    tabId = Math.random().toString(36).substring(2, 15)
+    sessionStorage.setItem('supabase.tab.id', tabId)
+  }
+  
+  return `supabase.auth.token.${tabId}`
+}
+
 // Create the base Supabase client with session persistence
 const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storageKey: 'supabase.auth.token',
+    storageKey: generateTabStorageKey(),
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   }
 })
