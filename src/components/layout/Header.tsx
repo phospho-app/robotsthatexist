@@ -11,7 +11,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bot, User, Settings, LogOut, Shield } from "lucide-react";
+import {
+  Bot,
+  User,
+  Settings,
+  LogOut,
+  Shield,
+  BotIcon,
+  PlusCircle,
+  Plus,
+} from "lucide-react";
 import { RobotSearch } from "@/components/RobotSearch";
 
 export function Header() {
@@ -44,8 +53,10 @@ export function Header() {
             </Link>
             <Link
               href="/create"
-              className="text-sm font-medium transition-colors hover:text-primary"
+              className="text-sm font-medium transition-colors hover:text-primary flex flex-row items-center"
             >
+              <Plus className="inline size-3" />
+              <BotIcon className="inline size-4 mr-2" />
               Add Robot
             </Link>
             {profile?.role === "admin" ? (
