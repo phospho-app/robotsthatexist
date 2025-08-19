@@ -5,18 +5,12 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { RobotForm } from "@/components/forms/RobotForm";
 import { useRobotForm } from "@/hooks/useRobotForm";
-import { generateSlug, validateRobotForm } from "@/lib/robotFormUtils";
+import { generateSlug } from "@/lib/robotFormUtils";
 import { mutate } from "swr";
 
 export default function CreateRobotClient() {
@@ -120,7 +114,7 @@ export default function CreateRobotClient() {
       });
 
       // Invalidate robots list cache to show new robot in browse page
-      await mutate("all-robots", undefined, false);
+      mutate("all-robots");
 
       // Clear form state since we're navigating away
       mutateFormState(
