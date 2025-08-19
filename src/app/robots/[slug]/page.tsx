@@ -30,6 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ogImageUrl = robot.image_url || `${baseUrl}/og-image.png`;
 
   // Create rich description
+  const budgetText = robot.budget ? ` • Budget: ${robot.budget}` : "";
+
   const ratingText =
     reviewCount > 0
       ? ` ⭐ ${averageRating.toFixed(1)}/5 (${reviewCount} stories)`
@@ -40,15 +42,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? ` • Tags: ${robot.tags.slice(0, 3).join(", ")}`
       : "";
 
-  const creatorText =
-    robot.profiles?.full_name || robot.profiles?.username
-      ? ` • Created by ${robot.profiles.full_name || robot.profiles.username}`
-      : "";
-
-  const description = `${robot.description}${ratingText}${tagsText}${creatorText}`;
+  const description = `${robot.description}${budgetText}${ratingText}${tagsText}`;
 
   return {
-    title: `${robot.name} - Robot Details | Robots That Exist`,
+    title: `${robot.name} - Real Robot Build Info | Robots That Exist`,
     description: description.slice(0, 160), // SEO description limit
     keywords: [
       robot.name,
@@ -74,7 +71,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robot.profiles?.full_name || robot.profiles?.username || "Anonymous",
     publisher: "Robots That Exist",
     openGraph: {
-      title: `${robot.name} - Robot Community`,
+      title: `${robot.name} - Robots That Exist`,
       description: description.slice(0, 200),
       url: robotUrl,
       siteName: "Robots That Exist",
@@ -95,7 +92,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${robot.name} - Robot Details`,
+      title: `${robot.name} - Robot Build Info`,
       description: description.slice(0, 200),
       images: [ogImageUrl],
       creator: robot.profiles?.github_username

@@ -19,14 +19,18 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Robots That Exist - Discover & Build Amazing Robots",
+    default: "Robots That Exist - Real Robot Catalog with Build Info",
     template: "%s | Robots That Exist",
   },
   description:
-    "Discover, build, learn about and share robots. Find URDF files, STL files, documentation, and more. Open source robotics community.",
+    "Browse real robots with complete build information including budgets, part lists, reviews, and ratings. Find URDF files, STL files, documentation, and community feedback for robots that actually exist.",
   keywords: [
     "robots",
     "robotics",
+    "robot budgets",
+    "robot costs", 
+    "robot reviews",
+    "robot ratings",
     "URDF",
     "STL",
     "3D models",
@@ -51,9 +55,9 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "https://robotsthatexist.com"
   ),
   openGraph: {
-    title: "Robots That Exist - Open Source Robot Community",
+    title: "Robots That Exist - Real Robot Catalog",
     description:
-      "Discover, build, learn about and share robots. Find URDF files, STL models, documentation and connect with the robotics community.",
+      "Browse real robots with build info, budgets, reviews and ratings. Find URDF files, STL models, documentation and community feedback.",
     url: "/",
     siteName: "Robots That Exist",
     images: [
@@ -69,9 +73,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Robots That Exist - Robot Community",
+    title: "Robots That Exist - Real Robot Catalog",
     description:
-      "Discover, build, learn about and share robots. Open source robotics community.",
+      "Browse real robots with build info, budgets, reviews and ratings. Community catalog of robots that actually exist.",
     images: ["/og-image.png"],
     creator: "@robotsthatexist",
   },

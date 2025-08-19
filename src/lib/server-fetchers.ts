@@ -12,6 +12,7 @@ export interface ServerRobot {
   description: string;
   github_url: string | null;
   image_url: string | null;
+  budget: string;
   tags: string[];
   created_at: string;
   updated_at: string;
