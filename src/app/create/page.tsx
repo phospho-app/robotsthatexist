@@ -80,6 +80,7 @@ export default function CreateRobotPage() {
           description: formData.description.trim(),
           github_url: formData.github_url.trim() || null,
           image_url: formData.image_url.trim() || null,
+          budget: formData.budget.trim(),
           tags,
           creator_id: user.id,
           status: formData.status,

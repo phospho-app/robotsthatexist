@@ -100,6 +100,7 @@ export default function EditRobotPage() {
           description: formData.description.trim(),
           github_url: formData.github_url.trim() || null,
           image_url: formData.image_url.trim() || null,
+          budget: formData.budget.trim(),
           status: formData.status,
           tags,
           updated_at: new Date().toISOString()
