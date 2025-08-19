@@ -36,8 +36,8 @@ export default function CreateRobotClient() {
     getFormErrors,
     isReady,
     isDirty,
-    mutateFormState
-  } = useRobotForm({ mode: 'create' });
+    mutateFormState,
+  } = useRobotForm({ mode: "create" });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ export default function CreateRobotClient() {
 
     if (!isValid()) {
       const errors = getFormErrors();
-      alert(errors.join('\n'));
+      alert(errors.join("\n"));
       return;
     }
 
@@ -79,7 +79,7 @@ export default function CreateRobotClient() {
           name: formData.name.trim(),
           slug,
           description: formData.description.trim(),
-          github_url: formData.github_url.trim() || null,
+          github_url: formData.github_url.trim(),
           image_url: formData.image_url.trim() || null,
           budget: formData.budget.trim(),
           tags,
@@ -95,7 +95,7 @@ export default function CreateRobotClient() {
 
       // Add social links if any
       if (socialLinks.length > 0) {
-        const socialLinkInserts = socialLinks.map(link => ({
+        const socialLinkInserts = socialLinks.map((link) => ({
           robot_id: robotData.id,
           url: link.url,
           title: link.title || null,
@@ -113,29 +113,32 @@ export default function CreateRobotClient() {
         }
       }
 
-      console.log('✅ Robot created successfully:', {
+      console.log("✅ Robot created successfully:", {
         slug,
         name: formData.name,
-        status: formData.status
+        status: formData.status,
       });
 
       // Invalidate robots list cache to show new robot in browse page
-      await mutate('all-robots', undefined, false);
+      await mutate("all-robots", undefined, false);
 
       // Clear form state since we're navigating away
-      mutateFormState({
-        formData: {
-          name: '',
-          description: '',
-          github_url: '',
-          image_url: '',
-          budget: '',
-          status: 'draft'
+      mutateFormState(
+        {
+          formData: {
+            name: "",
+            description: "",
+            github_url: "",
+            image_url: "",
+            budget: "",
+            status: "draft",
+          },
+          tags: [],
+          socialLinks: [],
+          isDirty: false,
         },
-        tags: [],
-        socialLinks: [],
-        isDirty: false
-      }, false);
+        false
+      );
 
       router.push(`/robots/${slug}`);
     } catch (error: any) {
@@ -169,7 +172,8 @@ export default function CreateRobotClient() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Create New Robot</h1>
           <p className="text-muted-foreground">
-            Add a new robot to the catalog with complete information including budget, social links and community resources.
+            Add a new robot to the catalog with complete information including
+            budget, social links and community resources.
           </p>
         </div>
 
@@ -190,8 +194,8 @@ export default function CreateRobotClient() {
               <Button type="button" variant="outline" asChild>
                 <Link href="/">Cancel</Link>
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={!isValid() || isSubmitting}
                 className="min-w-[140px]"
               >
@@ -212,7 +216,9 @@ export default function CreateRobotClient() {
         ) : (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2 text-muted-foreground">Initializing form...</span>
+            <span className="ml-2 text-muted-foreground">
+              Initializing form...
+            </span>
           </div>
         )}
       </div>
