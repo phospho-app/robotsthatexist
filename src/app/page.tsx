@@ -133,11 +133,11 @@ export default function Home() {
       {/* Hero Section */}
       <section className="text-center py-4 mb-8">
         <h1 className="text-4xl text-primary md:text-6xl font-bold pb-6">
-          Learn about robots that <i>actually</i> exist.
+          Go beyond the marketing fluff. Discover robots that exist.
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-          Discover real-world robots, read stories, share learning resources,
-          and connect with the community.
+          Learn about robotics, share resources, read stories from the
+          community.
         </p>
 
         {/* Search Bar */}
