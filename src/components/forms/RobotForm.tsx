@@ -4,15 +4,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { TagManager } from './TagManager'
 import { SocialLinksManager } from './SocialLinksManager'
+import { BudgetSelector } from '@/components/ui/budget-selector'
 import { RobotFormData, SocialLink, generateSlug } from '@/lib/robotFormUtils'
 
 interface RobotFormProps {
@@ -96,6 +90,22 @@ export function RobotForm({
               required
               disabled={disabled}
             />
+          </div>
+
+          <div>
+            <Label htmlFor="budget">
+              Budget <span className="text-destructive">*</span>
+            </Label>
+            <BudgetSelector
+              value={formData.budget}
+              onValueChange={(value) => updateFormData('budget', value)}
+              placeholder="Select budget range"
+              required={true}
+              disabled={disabled}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Select the approximate cost range to build this robot
+            </p>
           </div>
         </CardContent>
       </Card>

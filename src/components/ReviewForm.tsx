@@ -5,8 +5,10 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { BudgetSelector } from "@/components/ui/budget-selector";
 import { Star } from "lucide-react";
 import { mutate } from "swr";
 import type { ReviewFormProps } from "@/lib/types";
@@ -20,6 +22,7 @@ export function ReviewForm({
   const { user, profile } = useAuth();
   const [rating, setRating] = useState(existingReview?.rating || 0);
   const [comment, setComment] = useState(existingReview?.comment || "");
+  const [budget, setBudget] = useState(existingReview?.budget || "");
   const [isAnonymous, setIsAnonymous] = useState(
     existingReview?.is_anonymous || false
   );
@@ -57,6 +60,7 @@ export function ReviewForm({
           user_id: user.id,
           rating,
           comment: comment.trim(),
+          budget: budget.trim() || null,
           is_anonymous: isAnonymous,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -91,6 +95,7 @@ export function ReviewForm({
           .update({
             rating,
             comment: comment.trim(),
+            budget: budget.trim() || null,
             is_anonymous: isAnonymous,
             updated_at: new Date().toISOString(),
           })
@@ -107,6 +112,7 @@ export function ReviewForm({
           user_id: user.id,
           rating,
           comment: comment.trim(),
+          budget: budget.trim() || null,
           is_anonymous: isAnonymous,
         });
 
@@ -135,6 +141,7 @@ export function ReviewForm({
       if (!existingReview) {
         setRating(0);
         setComment("");
+        setBudget("");
         setIsAnonymous(false);
       }
     } catch (error: any) {
@@ -212,6 +219,22 @@ export function ReviewForm({
             />
             <div className="text-xs text-muted-foreground mt-1">
               {comment.length}/1000 characters
+            </div>
+          </div>
+
+          {/* Budget */}
+          <div>
+            <Label htmlFor="budget" className="block text-sm font-medium mb-2">
+              Budget (Optional)
+            </Label>
+            <BudgetSelector
+              value={budget}
+              onValueChange={setBudget}
+              placeholder="Select budget range"
+              required={false}
+            />
+            <div className="text-xs text-muted-foreground mt-1">
+              Share how much you spent building this robot
             </div>
           </div>
 

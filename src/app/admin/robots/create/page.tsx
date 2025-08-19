@@ -37,6 +37,7 @@ export default function CreateRobotPage() {
     description: "",
     github_url: "",
     image_url: "",
+    budget: "",
     status: "published" as "draft" | "published",
   });
   const [tags, setTags] = useState<string[]>([]);
@@ -70,7 +71,7 @@ export default function CreateRobotPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name.trim() || !formData.description.trim()) {
+    if (!formData.name.trim() || !formData.description.trim() || !formData.budget.trim()) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -104,6 +105,7 @@ export default function CreateRobotPage() {
           description: formData.description.trim(),
           github_url: formData.github_url.trim() || null,
           image_url: formData.image_url.trim() || null,
+          budget: formData.budget.trim(),
           creator_id: user!.id,
           status: formData.status,
           tags,
@@ -202,6 +204,24 @@ export default function CreateRobotPage() {
                 }
                 required
               />
+            </div>
+
+            <div>
+              <Label htmlFor="budget">
+                Budget <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="budget"
+                placeholder="e.g., $500-$1,500"
+                value={formData.budget}
+                onChange={(e) =>
+                  setFormData({ ...formData, budget: e.target.value })
+                }
+                required
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Enter the approximate cost to build this robot.
+              </p>
             </div>
           </CardContent>
         </Card>

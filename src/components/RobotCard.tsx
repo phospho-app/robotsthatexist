@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BudgetDisplay } from "@/components/ui/budget-display";
 import { Star, Youtube, Twitter, FileText, ExternalLink } from "lucide-react";
 import { DiscordIcon, GithubIcon } from "@/components/icons";
 import { useRobotReviews } from "@/lib/hooks/useRobotReviews";
@@ -64,6 +65,9 @@ export function RobotCard({ robot }: RobotCardProps) {
                 )}
               </div>
             )}
+
+            {/* Budget */}
+            <BudgetDisplay budget={robot.budget} />
 
             {/* Rating */}
             {reviewStats && reviewStats.review_count > 0 && (

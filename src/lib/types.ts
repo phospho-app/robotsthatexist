@@ -14,6 +14,7 @@ export interface Robot {
   description: string;
   github_url: string | null;
   image_url: string | null;
+  budget: string;
   tags: string[];
   creator_id: string;
   status: 'draft' | 'published';
@@ -51,6 +52,7 @@ export interface Review {
   user_id: string;
   rating: number;
   comment: string;
+  budget?: string;
   is_anonymous: boolean;
   created_at: string;
   updated_at: string;
@@ -121,6 +123,7 @@ export interface AdminReview {
   user_id: string;
   rating: number;
   comment: string;
+  budget?: string;
   is_anonymous: boolean;
   created_at: string;
   updated_at: string;
@@ -190,6 +193,7 @@ export interface ReviewFormProps {
     id: string;
     rating: number;
     comment: string;
+    budget?: string;
     is_anonymous: boolean;
   } | null;
 }

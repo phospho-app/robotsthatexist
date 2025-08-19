@@ -124,6 +124,7 @@ export default function CreateRobotPage() {
           description: '',
           github_url: '',
           image_url: '',
+          budget: '',
           status: 'draft'
         },
         tags: [],

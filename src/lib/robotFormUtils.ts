@@ -1,10 +1,12 @@
 import { detectPlatformFromUrl, isValidUrl } from './platform-utils'
+import { isValidBudgetRange } from './budget-config'
 
 export interface RobotFormData {
   name: string
   description: string
   github_url: string
   image_url: string
+  budget: string
   status: 'draft' | 'published'
 }
 
@@ -30,6 +32,12 @@ export function validateRobotForm(formData: RobotFormData): { isValid: boolean; 
 
   if (!formData.description.trim()) {
     errors.push('Description is required')
+  }
+
+  if (!formData.budget.trim()) {
+    errors.push('Budget is required')
+  } else if (!isValidBudgetRange(formData.budget)) {
+    errors.push('Please select a valid budget range')
   }
 
   if (!formData.status || (formData.status !== 'draft' && formData.status !== 'published')) {
@@ -71,6 +79,7 @@ export function getInitialFormData(): RobotFormData {
     description: '',
     github_url: '',
     image_url: '',
+    budget: '',
     status: 'published'
   }
 }

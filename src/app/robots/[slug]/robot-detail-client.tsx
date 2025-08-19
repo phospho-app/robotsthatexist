@@ -15,6 +15,7 @@ import { RobotFileList } from "@/components/RobotFileList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BudgetDisplay } from "@/components/ui/budget-display";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Star,
@@ -405,6 +406,13 @@ export default function RobotDetailClient({
                 </Badge>
               ))}
             </div>
+
+            {/* Budget */}
+            {robot.budget && (
+              <div className="mb-4">
+                <BudgetDisplay budget={robot.budget} className="text-lg" />
+              </div>
+            )}
 
             {/* Rating and Quick Links Row */}
             <div className="flex items-center justify-start gap-x-2 mb-4">
@@ -1072,7 +1080,7 @@ export default function RobotDetailClient({
                                 </Badge>
                               )}
                             </h4>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-2 flex-wrap gap-2">
                               <div className="flex">
                                 {[...Array(5)].map((_, i) => (
                                   <Star
@@ -1085,6 +1093,9 @@ export default function RobotDetailClient({
                                   />
                                 ))}
                               </div>
+                              {review.budget && (
+                                <BudgetDisplay budget={review.budget} />
+                              )}
                               <span className="text-sm text-muted-foreground">
                                 {new Date(
                                   review.created_at
