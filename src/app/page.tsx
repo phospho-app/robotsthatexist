@@ -133,11 +133,11 @@ export default function Home() {
       {/* Hero Section */}
       <section className="text-center py-4 mb-8">
         <h1 className="text-4xl text-primary md:text-6xl font-bold pb-6">
-          Go beyond the marketing fluff. Discover robots that exist.
+          Beyond the marketing fluff: robots that exist.
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-          Learn about robotics, share resources, read stories from the
-          community.
+          Robots you can actually learn from, build with, and contribute to.
+          Share resources and read stories from the community.
         </p>
 
         {/* Search Bar */}
@@ -145,7 +145,7 @@ export default function Home() {
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search robots, tags, or creators..."
+              placeholder="Eg: dog, open source, manipulator..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
