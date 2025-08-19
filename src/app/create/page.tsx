@@ -17,6 +17,7 @@ import Link from "next/link";
 import { RobotForm } from "@/components/forms/RobotForm";
 import { useRobotForm } from "@/hooks/useRobotForm";
 import { generateSlug, validateRobotForm } from "@/lib/robotFormUtils";
+import { mutate } from "swr";
 
 export default function CreateRobotPage() {
   const { user, profile } = useAuth();
@@ -117,6 +118,9 @@ export default function CreateRobotPage() {
         name: formData.name,
         status: formData.status
       });
+
+      // Invalidate robots list cache to show new robot in browse page
+      await mutate('all-robots', undefined, false);
 
       // Clear form state since we're navigating away
       mutateFormState({

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Bot, Plus, X, ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import { mutate } from "swr";
 
 function generateSlug(name: string): string {
   return name
@@ -114,6 +115,9 @@ export default function CreateRobotPage() {
         .single();
 
       if (error) throw error;
+
+      // Invalidate robots list cache to show new robot in browse page
+      await mutate('all-robots', undefined, false);
 
       // Success - redirect to robot page
       router.push(`/admin/robots`);

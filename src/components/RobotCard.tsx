@@ -66,24 +66,25 @@ export function RobotCard({ robot }: RobotCardProps) {
               </div>
             )}
 
-            {/* Budget */}
-            <BudgetDisplay budget={robot.budget} />
-
-            {/* Rating */}
-            {reviewStats && reviewStats.review_count > 0 && (
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-medium ml-1">
-                    {reviewStats.average_rating.toFixed(1)}
+            {/* Budget and Rating Row */}
+            <div className="flex items-center justify-between">
+              <BudgetDisplay budget={robot.budget} />
+              
+              {reviewStats && reviewStats.review_count > 0 && (
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm font-medium ml-1">
+                      {reviewStats.average_rating.toFixed(1)}
+                    </span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    ({reviewStats.review_count}{" "}
+                    {reviewStats.review_count === 1 ? "story" : "stories"})
                   </span>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  ({reviewStats.review_count}{" "}
-                  {reviewStats.review_count === 1 ? "story" : "stories"})
-                </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </CardContent>
 

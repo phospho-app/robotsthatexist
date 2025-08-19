@@ -182,13 +182,16 @@ export default function EditRobotPage() {
       // Also invalidate robot detail page cache if slug changed
       if (robotData?.robot.slug !== newSlug) {
         // Invalidate old slug cache
-        await mutate(`robot-${robotData?.robot.slug}`, undefined, false)
+        await mutate(`robot-with-data-${robotData?.robot.slug}`, undefined, false)
         // Invalidate new slug cache  
-        await mutate(`robot-${newSlug}`, undefined, false)
+        await mutate(`robot-with-data-${newSlug}`, undefined, false)
       } else {
         // Invalidate current slug cache
-        await mutate(`robot-${newSlug}`, undefined, false)
+        await mutate(`robot-with-data-${newSlug}`, undefined, false)
       }
+
+      // Invalidate robots list cache to update the browse page
+      await mutate('all-robots', undefined, false)
 
       // Success - redirect based on returnTo parameter
       if (returnTo.startsWith('/robots/')) {
