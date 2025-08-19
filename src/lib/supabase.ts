@@ -4,8 +4,16 @@ import { toast } from 'sonner'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Create the base Supabase client
-const supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
+// Create the base Supabase client with session persistence
+const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: 'supabase.auth.token',
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+  }
+})
 
 // Error formatting utility
 function formatError(error: any, operation: string, tableName: string): string {
@@ -26,6 +34,11 @@ function formatError(error: any, operation: string, tableName: string): string {
       default:
         return `Database error: ${error.message || 'Unknown error'}`
     }
+  }
+  
+  // Handle auth-related errors
+  if (error.message?.includes('JWT expired') || error.message?.includes('Invalid JWT')) {
+    return `Your session has expired. Please sign in again.`
   }
   
   if (error.message?.includes('timeout')) {

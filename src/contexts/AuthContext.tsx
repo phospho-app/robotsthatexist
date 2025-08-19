@@ -79,40 +79,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setSession(session)
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        const profileData = await fetchProfile(session.user.id)
-        setProfile(profileData)
-      }
-      
-      setLoading(false)
-    }
-
-    getInitialSession()
-
-    // Listen for auth changes
+    let mounted = true
+    
+    // Listen for auth changes (handles both initial session and changes)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
+      
+      console.log('Auth state change:', event, session ? 'session exists' : 'no session')
+      
       setSession(session)
       setUser(session?.user ?? null)
       
+      // Handle different auth events
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_EXPIRED') {
+        setProfile(null)
+        setLoading(false)
+        return
+      }
+      
       if (session?.user) {
         const profileData = await fetchProfile(session.user.id)
-        setProfile(profileData)
+        if (mounted) {
+          setProfile(profileData)
+        }
       } else {
         setProfile(null)
       }
       
-      setLoading(false)
+      if (mounted) {
+        setLoading(false)
+      }
     })
 
-    return () => subscription.unsubscribe()
+    // Get initial session - this will trigger onAuthStateChange
+    supabase.auth.getSession()
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   return (
