@@ -44,7 +44,7 @@ export function Header() {
         {/* Logo and Navigation */}
         <div className="flex items-center space-x-8">
           <Link
-            href="/robots"
+            href="/"
             className="flex items-center space-x-2"
             prefetch={false}
           >
