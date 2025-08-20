@@ -41,7 +41,22 @@ import { mutate } from "swr";
 // Function to sanitize HTML and fix malformed image src attributes
 const sanitizeHtml = (html: string): string => {
   // Fix malformed src attributes that have extra closing characters
-  return html.replace(/src="([^"]+)[)\]}]+"/g, 'src="$1"');
+  let sanitized = html.replace(/src="([^"]+)[)\]}]+"/g, 'src="$1"');
+  
+  // Convert GitHub user-attachments URLs to video elements when they appear as standalone URLs
+  // Pattern: https://github.com/user-attachments/assets/[uuid] on its own line
+  sanitized = sanitized.replace(
+    /<p>(https:\/\/github\.com\/user-attachments\/assets\/[a-f0-9-]+)<\/p>/gi,
+    '<p><video src="$1" controls style="max-width: 100%; height: auto;" class="rounded-lg">Your browser does not support the video tag.</video></p>'
+  );
+  
+  // Also handle cases where the URL might be in a link tag
+  sanitized = sanitized.replace(
+    /<a[^>]*href="(https:\/\/github\.com\/user-attachments\/assets\/[a-f0-9-]+)"[^>]*>\1<\/a>/gi,
+    '<video src="$1" controls style="max-width: 100%; height: auto;" class="rounded-lg">Your browser does not support the video tag.</video>'
+  );
+  
+  return sanitized;
 };
 
 // Optimized fetcher that loads robot and all related data in parallel
@@ -597,6 +612,7 @@ export default function RobotDetailClient({
                             // Clean up malformed URLs (remove trailing parentheses, brackets, etc.)
                             imgSrc = imgSrc.replace(/[)\]}]+$/, '');
 
+
                             // Check if the image is a GIF (animated images)
                             const isGif = imgSrc.toLowerCase().endsWith('.gif');
 
@@ -627,6 +643,34 @@ export default function RobotDetailClient({
                           },
                           a(props) {
                             const { href, children, ...rest } = props;
+                            
+                            // Check if this is a GitHub user-attachments URL that should be a video
+                            const isGitHubUserAttachment = href && 
+                              /^https:\/\/github\.com\/user-attachments\/assets\/[a-f0-9-]+$/i.test(href) &&
+                              children && 
+                              typeof children === 'string' && 
+                              children === href;
+                              
+                            if (isGitHubUserAttachment) {
+                              return (
+                                <video
+                                  {...rest}
+                                  src={href}
+                                  controls
+                                  className="max-w-full h-auto rounded-lg my-4"
+                                  style={{ maxWidth: '100%', height: 'auto' }}
+                                >
+                                  <p>
+                                    Your browser doesn't support HTML video. Here is a{' '}
+                                    <a href={href} target="_blank" rel="noopener noreferrer">
+                                      link to the video
+                                    </a>{' '}
+                                    instead.
+                                  </p>
+                                </video>
+                              );
+                            }
+                            
                             const linkHref = href?.startsWith("http")
                               ? href
                               : href?.startsWith("/")
@@ -645,6 +689,36 @@ export default function RobotDetailClient({
                                 {children}
                               </a>
                             );
+                          },
+                          p(props) {
+                            const { children, ...rest } = props;
+                            
+                            // Check if paragraph contains only a GitHub user-attachments URL
+                            if (children && 
+                                typeof children === 'string' && 
+                                /^https:\/\/github\.com\/user-attachments\/assets\/[a-f0-9-]+$/i.test(children.trim())) {
+                              const url = children.trim();
+                              return (
+                                <div className="my-4">
+                                  <video
+                                    src={url}
+                                    controls
+                                    className="max-w-full h-auto rounded-lg"
+                                    style={{ maxWidth: '100%', height: 'auto' }}
+                                  >
+                                    <p>
+                                      Your browser doesn't support HTML video. Here is a{' '}
+                                      <a href={url} target="_blank" rel="noopener noreferrer">
+                                        link to the video
+                                      </a>{' '}
+                                      instead.
+                                    </p>
+                                  </video>
+                                </div>
+                              );
+                            }
+                            
+                            return <p {...rest}>{children}</p>;
                           },
                         }}
                       >
