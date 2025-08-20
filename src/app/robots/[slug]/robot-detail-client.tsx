@@ -38,6 +38,12 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { mutate } from "swr";
 
+// Function to sanitize HTML and fix malformed image src attributes
+const sanitizeHtml = (html: string): string => {
+  // Fix malformed src attributes that have extra closing characters
+  return html.replace(/src="([^"]+)[)\]}]+"/g, 'src="$1"');
+};
+
 // Optimized fetcher that loads robot and all related data in parallel
 const robotWithDataFetcher = async (slug: string) => {
   return withTimeoutAndRetry(async () => {
@@ -538,7 +544,7 @@ export default function RobotDetailClient({
                         isReadmeExpanded ? "" : "max-h-[50vh]"
                       }`}
                       dangerouslySetInnerHTML={{
-                        __html: displayReadme,
+                        __html: sanitizeHtml(displayReadme),
                       }}
                     />
                     <div className="mt-6 flex justify-center">
@@ -586,6 +592,25 @@ export default function RobotDetailClient({
                                       )}/main/${srcString}`
                                   : srcString;
                               }
+                            }
+
+                            // Clean up malformed URLs (remove trailing parentheses, brackets, etc.)
+                            imgSrc = imgSrc.replace(/[)\]}]+$/, '');
+
+                            // Check if the image is a GIF (animated images)
+                            const isGif = imgSrc.toLowerCase().endsWith('.gif');
+
+                            if (isGif) {
+                              // Use regular img tag for GIFs to preserve animation
+                              return (
+                                <img
+                                  {...rest}
+                                  src={imgSrc}
+                                  alt={alt || ""}
+                                  className="max-w-full h-auto rounded-lg"
+                                  loading="lazy"
+                                />
+                              );
                             }
 
                             return (
