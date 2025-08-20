@@ -115,12 +115,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })
 
+    // Listen for storage changes to sync auth state across tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'supabase.auth.token' && e.newValue !== e.oldValue) {
+        // Session changed in another tab, refresh current session
+        supabase.auth.getSession()
+      }
+    }
+
     // Get initial session - this will trigger onAuthStateChange
     supabase.auth.getSession()
+
+    // Add storage event listener for cross-tab sync
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange)
+    }
 
     return () => {
       mounted = false
       subscription.unsubscribe()
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleStorageChange)
+      }
     }
   }, [])
 
