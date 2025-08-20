@@ -654,7 +654,6 @@ export default function RobotDetailClient({
                             if (isGitHubUserAttachment) {
                               return (
                                 <video
-                                  {...rest}
                                   src={href}
                                   controls
                                   className="max-w-full h-auto rounded-lg my-4"
