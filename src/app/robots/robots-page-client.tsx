@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAllRobots, useAllTags } from "@/lib/robot-data";
 import { comprehensiveSearch } from "@/lib/client-search-utils";
-import { RobotCard } from "@/components/RobotCard";
+import { RobotGrid } from "@/components/RobotGrid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -200,11 +200,7 @@ function RobotsContent() {
             Found {robots.length} robot{robots.length !== 1 ? "s" : ""}
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {robots.map((robot) => (
-              <RobotCard key={robot.id} robot={robot as RobotCardData} />
-            ))}
-          </div>
+          <RobotGrid robots={robots as RobotCardData[]} />
         </>
       )}
     </div>

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAllRobots } from "@/lib/robot-data";
 import { searchRobotsClientSide } from "@/lib/client-search-utils";
-import { RobotCard } from "@/components/RobotCard";
+import { RobotGrid } from "@/components/RobotGrid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -186,6 +186,7 @@ export default function Home() {
             <Link
               href="/robots"
               className="text-primary hover:text-primary/80 transition-colors"
+              prefetch={false}
             >
               View all →
             </Link>
@@ -213,11 +214,7 @@ export default function Home() {
             ))}
           </div>
         ) : displayedRobots.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {displayedRobots.map((robot) => (
-              <RobotCard key={robot.id} robot={robot as RobotCardData} />
-            ))}
-          </div>
+          <RobotGrid robots={displayedRobots as RobotCardData[]} />
         ) : (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🤖</div>

@@ -43,7 +43,11 @@ export function Header() {
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         {/* Logo and Navigation */}
         <div className="flex items-center space-x-8">
-          <Link href="/robots" className="flex items-center space-x-2">
+          <Link
+            href="/robots"
+            className="flex items-center space-x-2"
+            prefetch={false}
+          >
             <Bot className="h-6 w-6 text-primary" />
             <span className="font-bold text-xl text-primary">
               robots that exist
@@ -60,6 +64,7 @@ export function Header() {
             <Link
               href="/robots"
               className="text-sm font-medium transition-colors hover:text-primary"
+              prefetch={false}
             >
               All Robots
             </Link>
@@ -155,16 +160,16 @@ export function Header() {
       </div>
 
       {/* Mobile Navigation Menu */}
-      <div className={`lg:hidden border-t bg-background/95 backdrop-blur transition-all duration-300 ease-in-out overflow-hidden ${
-        isMobileMenuOpen 
-          ? 'max-h-96 opacity-100' 
-          : 'max-h-0 opacity-0'
-      }`}>
+      <div
+        className={`lg:hidden border-t bg-background/95 backdrop-blur transition-all duration-300 ease-in-out overflow-hidden ${
+          isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
         <nav className="container mx-auto px-4 py-4 space-y-4">
           <div className="md:hidden mb-4">
             <RobotSearch />
           </div>
-          
+
           <Link
             href="/"
             className="block text-sm font-medium transition-colors hover:text-primary py-2"
@@ -176,6 +181,7 @@ export function Header() {
             href="/robots"
             className="block text-sm font-medium transition-colors hover:text-primary py-2"
             onClick={closeMobileMenu}
+            prefetch={false}
           >
             All Robots
           </Link>

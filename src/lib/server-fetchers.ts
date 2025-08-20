@@ -225,22 +225,16 @@ export function generateRobotStructuredData(
 
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "Product",
+    "@type": "SoftwareApplication",
     name: robot.name,
     description: enhancedDescription,
     url: `${baseUrl}/robots/${robot.slug}`,
     image: robot.image_url || `${baseUrl}/og-image.png`,
-    brand: {
-      "@type": "Organization",
+    author: {
+      "@type": "Person",
       name: robot.profiles?.full_name || robot.profiles?.username || "Anonymous"
     },
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-      url: `${baseUrl}/robots/${robot.slug}`
-    },
+    applicationCategory: "Robotics",
     aggregateRating: reviews.length > 0 ? {
       "@type": "AggregateRating",
       ratingValue: averageRating.toFixed(1),
