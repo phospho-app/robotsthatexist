@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Bot, Plus, X, ArrowLeft, Save } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { mutate } from "swr";
 
 function generateSlug(name: string): string {

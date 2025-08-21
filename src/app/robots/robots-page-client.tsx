@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { useAllRobots, useAllTags } from "@/lib/robot-data";
 import { comprehensiveSearch } from "@/lib/client-search-utils";
 import { RobotGrid } from "@/components/RobotGrid";

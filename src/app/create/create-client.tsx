@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Save, Loader2 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { RobotForm } from "@/components/forms/RobotForm";
 import { useRobotForm } from "@/hooks/useRobotForm";
 import { generateSlug } from "@/lib/robotFormUtils";

@@ -10,7 +10,7 @@ import { ThumbsUp, ThumbsDown, Download, Plus, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import type { RobotFile, RobotFileListProps } from "@/lib/types";
 
 // Optimized fetcher function for SWR - eliminates N+1 query problem

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import useSWR from "swr";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { supabase } from "@/lib/supabase";
 import { useAllRobots } from "@/lib/robot-data";
 import { searchRobotsClientSide } from "@/lib/client-search-utils";

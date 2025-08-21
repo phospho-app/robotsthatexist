@@ -6,7 +6,7 @@ import { redirect, useRouter, useParams, useSearchParams } from 'next/navigation
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Bot, ArrowLeft, Save, Loader2, AlertTriangle } from 'lucide-react'
-import Link from 'next/link'
+import Link from '@/components/ui/link'
 import { RobotForm } from '@/components/forms/RobotForm'
 import { useRobotForm } from '@/hooks/useRobotForm'
 import { generateSlug } from '@/lib/robotFormUtils'
@@ -110,36 +110,66 @@ export default function EditRobotPage() {
 
       if (error) throw error
 
-      // Update social links - only delete and recreate creator's social links, preserve community contributions
-      // Delete only social links created by the robot creator (or legacy ones with null user_id)
-      const { error: deleteError } = await supabase
-        .from('robot_social_links')
-        .delete()
-        .eq('robot_id', robotId)
-        .or(`user_id.eq.${user?.id},user_id.is.null`)
-
-      if (deleteError) {
-        console.error('Error deleting existing creator social links:', deleteError)
-      }
-
-      // Add new social links if any - mark them as created by the robot creator
-      if (socialLinks.length > 0) {
-        const socialLinkInserts = socialLinks.map(link => ({
-          robot_id: robotId,
-          url: link.url,
-          title: link.title || null,
-          platform: link.platform || null,
-          user_id: user?.id, // Mark as created by the robot creator
-        }))
-
-        const { error: socialLinksError } = await supabase
+      // Update social links - only update if they actually changed
+      // Compare current social links with existing ones from the robot creator
+      const existingCreatorLinks = robotData?.socialLinks?.filter(link => 
+        link.user_id === user?.id || link.user_id === null
+      ) || []
+      
+      // Normalize both arrays for comparison (remove id and timestamps)
+      const normalizeLink = (link: any) => ({
+        url: link.url,
+        title: link.title || null,
+        platform: link.platform || null
+      })
+      
+      const existingNormalized = existingCreatorLinks.map(normalizeLink)
+      const currentNormalized = socialLinks.map(normalizeLink)
+      
+      // Check if social links have actually changed
+      const socialLinksChanged = 
+        existingNormalized.length !== currentNormalized.length ||
+        !existingNormalized.every((existing, index) => 
+          existing.url === currentNormalized[index]?.url &&
+          existing.title === currentNormalized[index]?.title &&
+          existing.platform === currentNormalized[index]?.platform
+        )
+      
+      if (socialLinksChanged) {
+        console.log('🔗 Social links changed, updating...')
+        
+        // Delete only social links created by the robot creator (or legacy ones with null user_id)
+        const { error: deleteError } = await supabase
           .from('robot_social_links')
-          .insert(socialLinkInserts)
+          .delete()
+          .eq('robot_id', robotId)
+          .or(`user_id.eq.${user?.id},user_id.is.null`)
 
-        if (socialLinksError) {
-          console.error('Error updating social links:', socialLinksError)
-          // Don't fail the entire operation if social links fail
+        if (deleteError) {
+          console.error('Error deleting existing creator social links:', deleteError)
         }
+
+        // Add new social links if any - mark them as created by the robot creator
+        if (socialLinks.length > 0) {
+          const socialLinkInserts = socialLinks.map(link => ({
+            robot_id: robotId,
+            url: link.url,
+            title: link.title || null,
+            platform: link.platform || null,
+            user_id: user?.id, // Mark as created by the robot creator
+          }))
+
+          const { error: socialLinksError } = await supabase
+            .from('robot_social_links')
+            .insert(socialLinkInserts)
+
+          if (socialLinksError) {
+            console.error('Error updating social links:', socialLinksError)
+            // Don't fail the entire operation if social links fail
+          }
+        }
+      } else {
+        console.log('🔗 Social links unchanged, skipping update')
       }
 
       console.log('✅ Robot updated successfully:', {
@@ -175,18 +205,19 @@ export default function EditRobotPage() {
         socialLinks: socialLinks.map(link => ({
           url: link.url,
           title: link.title,
-          platform: link.platform || null
+          platform: link.platform || null,
+          user_id: user?.id || null
         }))
       }, false)
 
-      // Also invalidate robot detail page cache if slug changed
+      // Update robot detail page cache with fresh data instead of invalidating
       if (robotData?.robot.slug !== newSlug) {
-        // Invalidate old slug cache
+        // Invalidate old slug cache (since URL changed)
         await mutate(`robot-with-data-${robotData?.robot.slug}`, undefined, false)
-        // Invalidate new slug cache  
+        // Invalidate new slug cache (let it refetch with fresh data)
         await mutate(`robot-with-data-${newSlug}`, undefined, false)
       } else {
-        // Invalidate current slug cache
+        // Invalidate current slug cache (let it refetch with fresh data)
         await mutate(`robot-with-data-${newSlug}`, undefined, false)
       }
 

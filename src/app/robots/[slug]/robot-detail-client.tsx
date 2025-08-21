@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { withTimeoutAndRetry, swrConfig } from "@/lib/performance";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 import { supabase } from "@/lib/supabase";
 import { fetchGitHubReadme, isValidGitHubUrl } from "@/lib/github";
 import { useAuth } from "@/contexts/AuthContext";

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from '@/components/ui/link'
 import { supabase } from '@/lib/supabase'
 
 export default function AuthCallback() {
@@ -38,7 +39,7 @@ export default function AuthCallback() {
         <h2 className="text-xl font-semibold mb-2">Completing sign in...</h2>
         <p className="text-gray-600 mb-4">Please wait while we redirect you.</p>
         <p className="text-sm text-gray-500">
-          If you're not redirected, <a href="/" className="text-blue-600 hover:underline">click here</a>
+          If you&apos;re not redirected, <Link href="/" className="text-blue-600 hover:underline">click here</Link>
         </p>
       </div>
     </div>

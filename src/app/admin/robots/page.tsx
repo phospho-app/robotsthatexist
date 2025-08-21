@@ -48,7 +48,7 @@ import {
   Github,
   AlertTriangle,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/link";
 
 const robotsFetcher = async (key: string) => {
   const [, searchQuery, , sortBy] = key.split("|");

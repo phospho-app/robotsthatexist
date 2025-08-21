@@ -1,19 +1,10 @@
 'use client'
 
-import { useCallback, useMemo, useEffect } from 'react'
+import { useCallback, useMemo } from 'react'
 import useSWR from 'swr'
 import { supabase } from '@/lib/supabase'
 import { RobotFormData, SocialLink, getInitialFormData, validateRobotForm } from '@/lib/robotFormUtils'
 
-interface Robot {
-  id?: string
-  name: string
-  description: string
-  github_url?: string | null
-  image_url?: string | null
-  status: 'draft' | 'published'
-  tags?: string[]
-}
 
 interface RobotFormState {
   formData: RobotFormData
@@ -49,7 +40,8 @@ const robotWithDataFetcher = async (robotId: string) => {
     socialLinks: (socialLinksResult.data || []).map((link: any) => ({
       url: link.url,
       title: link.title || '',
-      platform: link.platform
+      platform: link.platform,
+      user_id: link.user_id
     }))
   }
 }
@@ -177,9 +169,9 @@ export function useRobotForm({ robotId, mode }: UseRobotFormOptions) {
     }
   }, [mode, robotData, formState])
 
-  const currentFormData = formState?.formData || getInitialFormData()
-  const currentTags = formState?.tags || []
-  const currentSocialLinks = formState?.socialLinks || []
+  const currentFormData = useMemo(() => formState?.formData || getInitialFormData(), [formState?.formData])
+  const currentTags = useMemo(() => formState?.tags || [], [formState?.tags])
+  const currentSocialLinks = useMemo(() => formState?.socialLinks || [], [formState?.socialLinks])
 
   // Update functions with optimistic updates and localStorage sync
   const updateFormData = useCallback((newFormData: RobotFormData) => {
