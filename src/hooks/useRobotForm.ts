@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useEffect } from 'react'
 import useSWR from 'swr'
 import { supabase } from '@/lib/supabase'
 import { RobotFormData, SocialLink, getInitialFormData, validateRobotForm } from '@/lib/robotFormUtils'
@@ -51,6 +51,44 @@ const robotWithDataFetcher = async (robotId: string) => {
       title: link.title || '',
       platform: link.platform
     }))
+  }
+}
+
+// Local storage keys
+const ROBOT_FORM_STORAGE_KEY = 'robot-form-draft'
+
+// Local storage utilities
+const saveFormToLocalStorage = (formState: RobotFormState) => {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(ROBOT_FORM_STORAGE_KEY, JSON.stringify(formState))
+    } catch (error) {
+      console.error('Failed to save form to localStorage:', error)
+    }
+  }
+}
+
+const loadFormFromLocalStorage = (): RobotFormState | null => {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(ROBOT_FORM_STORAGE_KEY)
+      if (stored) {
+        return JSON.parse(stored)
+      }
+    } catch (error) {
+      console.error('Failed to load form from localStorage:', error)
+    }
+  }
+  return null
+}
+
+const clearFormFromLocalStorage = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(ROBOT_FORM_STORAGE_KEY)
+    } catch (error) {
+      console.error('Failed to clear form from localStorage:', error)
+    }
   }
 }
 
@@ -107,7 +145,15 @@ export function useRobotForm({ robotId, mode }: UseRobotFormOptions) {
           lastSaved: new Date().toISOString()
         }
       } else {
-        // Create mode
+        // Create mode - try to load from localStorage first
+        const storedFormState = loadFormFromLocalStorage()
+        if (storedFormState) {
+          return {
+            ...storedFormState,
+            isDirty: true // Mark as dirty since it's loaded from storage
+          }
+        }
+        
         return {
           formData: getInitialFormData(),
           tags: [],
@@ -135,30 +181,63 @@ export function useRobotForm({ robotId, mode }: UseRobotFormOptions) {
   const currentTags = formState?.tags || []
   const currentSocialLinks = formState?.socialLinks || []
 
-  // Update functions with optimistic updates
+  // Update functions with optimistic updates and localStorage sync
   const updateFormData = useCallback((newFormData: RobotFormData) => {
+    const updatedState = {
+      formData: newFormData,
+      tags: currentTags,
+      socialLinks: currentSocialLinks,
+      isDirty: true
+    }
+    
     mutateFormState((current) => ({
       ...current!,
-      formData: newFormData,
-      isDirty: true
+      ...updatedState
     }), false)
-  }, [mutateFormState])
+    
+    // Save to localStorage for create mode
+    if (mode === 'create') {
+      saveFormToLocalStorage(updatedState)
+    }
+  }, [mutateFormState, currentTags, currentSocialLinks, mode])
 
   const updateTags = useCallback((newTags: string[]) => {
+    const updatedState = {
+      formData: currentFormData,
+      tags: newTags,
+      socialLinks: currentSocialLinks,
+      isDirty: true
+    }
+    
     mutateFormState((current) => ({
       ...current!,
-      tags: newTags,
-      isDirty: true
+      ...updatedState
     }), false)
-  }, [mutateFormState])
+    
+    // Save to localStorage for create mode
+    if (mode === 'create') {
+      saveFormToLocalStorage(updatedState)
+    }
+  }, [mutateFormState, currentFormData, currentSocialLinks, mode])
 
   const updateSocialLinks = useCallback((newSocialLinks: SocialLink[]) => {
-    mutateFormState((current) => ({
-      ...current!,
+    const updatedState = {
+      formData: currentFormData,
+      tags: currentTags,
       socialLinks: newSocialLinks,
       isDirty: true
+    }
+    
+    mutateFormState((current) => ({
+      ...current!,
+      ...updatedState
     }), false)
-  }, [mutateFormState])
+    
+    // Save to localStorage for create mode
+    if (mode === 'create') {
+      saveFormToLocalStorage(updatedState)
+    }
+  }, [mutateFormState, currentFormData, currentTags, mode])
 
   // Validation
   const validate = useCallback(() => {
@@ -192,14 +271,34 @@ export function useRobotForm({ robotId, mode }: UseRobotFormOptions) {
         lastSaved: new Date().toISOString()
       }, false)
     } else {
-      mutateFormState({
+      const resetState = {
         formData: getInitialFormData(),
         tags: [],
         socialLinks: [],
         isDirty: false
-      }, false)
+      }
+      mutateFormState(resetState, false)
+      
+      // Clear localStorage for create mode
+      if (mode === 'create') {
+        clearFormFromLocalStorage()
+      }
     }
   }, [mode, robotData, mutateFormState])
+
+  // Function to clear form draft from localStorage
+  const clearFormDraft = useCallback(() => {
+    if (mode === 'create') {
+      clearFormFromLocalStorage()
+      const resetState = {
+        formData: getInitialFormData(),
+        tags: [],
+        socialLinks: [],
+        isDirty: false
+      }
+      mutateFormState(resetState, false)
+    }
+  }, [mode, mutateFormState])
 
   return {
     // State
@@ -228,6 +327,7 @@ export function useRobotForm({ robotId, mode }: UseRobotFormOptions) {
 
     // Utilities
     reset,
+    clearFormDraft,
     mutateFormState,
     mutateRobot,
     

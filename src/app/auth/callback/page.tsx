@@ -36,7 +36,10 @@ export default function AuthCallback() {
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
         <h2 className="text-xl font-semibold mb-2">Completing sign in...</h2>
-        <p className="text-gray-600">Please wait while we redirect you.</p>
+        <p className="text-gray-600 mb-4">Please wait while we redirect you.</p>
+        <p className="text-sm text-gray-500">
+          If you're not redirected, <a href="/" className="text-blue-600 hover:underline">click here</a>
+        </p>
       </div>
     </div>
   )

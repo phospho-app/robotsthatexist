@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,50 @@ import { Star } from "lucide-react";
 import { mutate } from "swr";
 import type { ReviewFormProps } from "@/lib/types";
 
+// Local storage utilities for reviews
+interface ReviewDraft {
+  rating: number;
+  comment: string;
+  budget: string;
+  isAnonymous: boolean;
+}
+
+const getReviewStorageKey = (robotId: string) => `review-draft-${robotId}`;
+
+const saveReviewDraft = (robotId: string, draft: ReviewDraft) => {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(getReviewStorageKey(robotId), JSON.stringify(draft));
+    } catch (error) {
+      console.error('Failed to save review draft:', error);
+    }
+  }
+};
+
+const loadReviewDraft = (robotId: string): ReviewDraft | null => {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(getReviewStorageKey(robotId));
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Failed to load review draft:', error);
+    }
+  }
+  return null;
+};
+
+const clearReviewDraft = (robotId: string) => {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(getReviewStorageKey(robotId));
+    } catch (error) {
+      console.error('Failed to clear review draft:', error);
+    }
+  }
+};
+
 export function ReviewForm({
   robotId,
   onReviewSubmitted,
@@ -20,14 +64,45 @@ export function ReviewForm({
   existingReview,
 }: ReviewFormProps) {
   const { user, profile } = useAuth();
-  const [rating, setRating] = useState(existingReview?.rating || 0);
-  const [comment, setComment] = useState(existingReview?.comment || "");
-  const [budget, setBudget] = useState(existingReview?.budget || "");
-  const [isAnonymous, setIsAnonymous] = useState(
-    existingReview?.is_anonymous || false
-  );
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [budget, setBudget] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Load form from localStorage or existing review on mount
+  useEffect(() => {
+    if (existingReview) {
+      // If editing existing review, use existing data
+      setRating(existingReview.rating || 0);
+      setComment(existingReview.comment || "");
+      setBudget(existingReview.budget || "");
+      setIsAnonymous(existingReview.is_anonymous || false);
+    } else {
+      // For new reviews, try to load from localStorage
+      const draft = loadReviewDraft(robotId);
+      if (draft) {
+        setRating(draft.rating);
+        setComment(draft.comment);
+        setBudget(draft.budget);
+        setIsAnonymous(draft.isAnonymous);
+      }
+    }
+  }, [robotId, existingReview]);
+
+  // Auto-save to localStorage when form data changes (only for new reviews)
+  useEffect(() => {
+    if (!existingReview && (rating > 0 || comment.trim() || budget || isAnonymous)) {
+      const draft: ReviewDraft = {
+        rating,
+        comment,
+        budget,
+        isAnonymous,
+      };
+      saveReviewDraft(robotId, draft);
+    }
+  }, [robotId, rating, comment, budget, isAnonymous, existingReview]);
 
   if (!user || !profile) {
     return (
@@ -137,12 +212,13 @@ export function ReviewForm({
 
       onReviewSubmitted?.();
 
-      // Reset form if creating new review
+      // Reset form and clear localStorage if creating new review
       if (!existingReview) {
         setRating(0);
         setComment("");
         setBudget("");
         setIsAnonymous(false);
+        clearReviewDraft(robotId);
       }
     } catch (error: any) {
       console.error("Error submitting story:", error);

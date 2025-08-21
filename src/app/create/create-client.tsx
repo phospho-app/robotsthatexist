@@ -31,6 +31,7 @@ export default function CreateRobotClient() {
     isReady,
     isDirty,
     mutateFormState,
+    clearFormDraft,
   } = useRobotForm({ mode: "create" });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,23 +117,8 @@ export default function CreateRobotClient() {
       // Invalidate robots list cache to show new robot in browse page
       mutate("all-robots");
 
-      // Clear form state since we're navigating away
-      mutateFormState(
-        {
-          formData: {
-            name: "",
-            description: "",
-            github_url: "",
-            image_url: "",
-            budget: "",
-            status: "draft",
-          },
-          tags: [],
-          socialLinks: [],
-          isDirty: false,
-        },
-        false
-      );
+      // Clear form draft from localStorage and reset state
+      clearFormDraft();
 
       router.push(`/robots/${slug}`);
     } catch (error: any) {
