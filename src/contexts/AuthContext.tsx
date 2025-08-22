@@ -95,9 +95,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session ? "session exists" : "no session"
       );
 
-      // Only update state if this is the first initialization or a real auth event
-      if (!sessionInitialized || event !== 'INITIAL_SESSION') {
-        sessionInitialized = true;
+      // Handle auth events properly - avoid duplicate processing
+      if (event === 'INITIAL_SESSION') {
+        // Only process INITIAL_SESSION if we haven't initialized yet
+        if (!sessionInitialized) {
+          sessionInitialized = true;
+          setSession(session || false);
+          setUser(session?.user ?? null);
+
+          if (session?.user) {
+            const profileData = await fetchProfile(session.user.id);
+            if (mounted) {
+              setProfile(profileData);
+            }
+          } else {
+            setProfile(null);
+          }
+        }
+      } else {
+        // Process all other auth events (SIGNED_IN, SIGNED_OUT, etc.)
         setSession(session || false);
         setUser(session?.user ?? null);
 
@@ -123,9 +139,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(() => reject(new Error('Session timeout')), 10000)
         );
 
-        const {
-          data: { session },
-        } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const result = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as { data: { session: Session | null } };
+        
+        const { data: { session } } = result;
         
         if (mounted && !sessionInitialized) {
           sessionInitialized = true;
