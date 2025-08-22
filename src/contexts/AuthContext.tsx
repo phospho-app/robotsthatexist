@@ -82,24 +82,84 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
     let sessionInitialized = false;
+    let isHandlingAuthEvent = false;
 
     // Set up auth state listener first
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
+      if (!mounted || isHandlingAuthEvent) return;
 
-      console.log(
-        "Auth state change:",
-        event,
-        session ? "session exists" : "no session"
-      );
+      isHandlingAuthEvent = true;
+      
+      try {
+        console.log(
+          "Auth state change:",
+          event,
+          session ? "session exists" : "no session",
+          "Tab:", document.visibilityState
+        );
 
-      // Handle auth events properly - avoid duplicate processing
-      if (event === 'INITIAL_SESSION') {
-        // Always process INITIAL_SESSION to set initial state
-        if (!sessionInitialized) {
-          sessionInitialized = true;
+        // Handle auth events properly - avoid duplicate processing
+        if (event === 'INITIAL_SESSION') {
+          // Always process INITIAL_SESSION to set initial state
+          if (!sessionInitialized) {
+            sessionInitialized = true;
+            
+            // Validate session before using it
+            if (session) {
+              try {
+                // Quick session validation - try a simple query
+                await supabase.from('profiles').select('id').limit(1);
+                console.log('Auth: Session validated successfully');
+              } catch (error) {
+                console.warn('Auth: Session invalid, clearing:', error);
+                session = null;
+              }
+            }
+            
+            setSession(session || false);
+            setUser(session?.user ?? null);
+
+            if (session?.user) {
+              const profileData = await fetchProfile(session.user.id);
+              if (mounted) {
+                setProfile(profileData);
+              }
+            } else {
+              setProfile(null);
+            }
+          }
+        } else if (event === 'SIGNED_IN' && sessionInitialized) {
+          // If we get SIGNED_IN right after INITIAL_SESSION with same user, skip duplicate processing
+          const currentUserId = user?.id;
+          const newUserId = session?.user?.id;
+          
+          if (currentUserId === newUserId && session) {
+            // Same user, just update session silently (server validation completed)
+            setSession(session);
+            console.log('Auth: Server validation completed for existing session');
+            return;
+          }
+          
+          // Different user or new login, process normally
+          setSession(session || false);
+          setUser(session?.user ?? null);
+
+          if (session?.user) {
+            const profileData = await fetchProfile(session.user.id);
+            if (mounted) {
+              setProfile(profileData);
+            }
+          } else {
+            setProfile(null);
+          }
+        } else if (event === 'TOKEN_REFRESHED') {
+          // Handle token refresh - update session but don't refetch profile
+          console.log('Auth: Token refreshed');
+          setSession(session || false);
+        } else {
+          // Process all other auth events (SIGNED_OUT, etc.)
           setSession(session || false);
           setUser(session?.user ?? null);
 
@@ -112,43 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setProfile(null);
           }
         }
-      } else if (event === 'SIGNED_IN' && sessionInitialized) {
-        // If we get SIGNED_IN right after INITIAL_SESSION with same user, skip duplicate processing
-        const currentUserId = user?.id;
-        const newUserId = session?.user?.id;
-        
-        if (currentUserId === newUserId && session) {
-          // Same user, just update session silently (server validation completed)
-          setSession(session);
-          console.log('Auth: Server validation completed for existing session');
-          return;
-        }
-        
-        // Different user or new login, process normally
-        setSession(session || false);
-        setUser(session?.user ?? null);
-
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
-          if (mounted) {
-            setProfile(profileData);
-          }
-        } else {
-          setProfile(null);
-        }
-      } else {
-        // Process all other auth events (SIGNED_OUT, TOKEN_REFRESHED, etc.)
-        setSession(session || false);
-        setUser(session?.user ?? null);
-
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
-          if (mounted) {
-            setProfile(profileData);
-          }
-        } else {
-          setProfile(null);
-        }
+      } finally {
+        isHandlingAuthEvent = false;
       }
     });
 
@@ -191,12 +216,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Add storage event listener for cross-tab synchronization
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'supabase.auth.token' && e.newValue !== e.oldValue) {
+        console.log('Auth: Storage change detected from another tab');
+        // Let Supabase handle the storage change naturally
+        // This will trigger the auth state change listener
+      }
+    };
+
+    // Add visibility change handler to detect when tab becomes active
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && sessionInitialized) {
+        console.log('Auth: Tab became visible, checking session');
+        // Refresh session when tab becomes active
+        setTimeout(() => {
+          supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+            if (currentSession && session && currentSession.access_token !== session.access_token) {
+              console.log('Auth: Session changed in another tab, updating');
+              setSession(currentSession);
+            }
+          }).catch(console.warn);
+        }, 100);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
     // Small delay to let auth state listener initialize first
     setTimeout(initializeAuth, 100);
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleStorageChange);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
     };
   }, []);
 
