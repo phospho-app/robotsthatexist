@@ -1,183 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-// Create the base Supabase client with session persistence and proper multi-tab support
-const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    // This is a great practice for easier debugging during development
-    debug: process.env.NODE_ENV === "development",
-  },
-  global: {
-    // Custom headers are useful for server-side logging and analytics
-    headers: {
-      "x-client-info": "robotsthatexist-web",
-    },
-  },
-});
-
-// Error formatting utility
-function formatError(error: any, operation: string, tableName: string): string {
-  if (error.code) {
-    switch (error.code) {
-      case "23505": // Unique constraint violation
-        return `This ${tableName.slice(
-          0,
-          -1
-        )} already exists. Please use different values.`;
-      case "23503": // Foreign key constraint violation
-        return `Invalid reference. Please check the related data.`;
-      case "42P01": // Table doesn't exist
-        return `Database table not found. Please contact support.`;
-      case "PGRST301": // Row Level Security violation
-        return `Permission denied. You don't have access to perform this action.`;
-      case "PGRST116": // Not found
-        return `No data found matching your request.`;
-      case "PGRST204": // No content
-        return `No results found.`;
-      default:
-        return `Database error: ${error.message || "Unknown error"}`;
-    }
-  }
-
-  // Handle auth-related errors
-  if (
-    error.message?.includes("JWT expired") ||
-    error.message?.includes("Invalid JWT")
-  ) {
-    return `Your session has expired. Please sign in again.`;
-  }
-
-  if (error.message?.includes("timeout")) {
-    return `Operation timed out. Please check your connection and try again.`;
-  }
-
-  return `Failed to ${operation} ${tableName.slice(0, -1)}. Please try again.`;
-}
-
-// Success message mappings
-const successMessages: Record<string, Record<string, string>> = {
-  robots: {
-    insert: "Robot created successfully",
-    update: "Robot updated successfully",
-    delete: "Robot deleted successfully",
-  },
-  reviews: {
-    insert: "Review submitted successfully",
-    update: "Review updated successfully",
-    delete: "Review deleted successfully",
-  },
-  robot_social_links: {
-    insert: "Social link added successfully",
-    update: "Social link updated successfully",
-    delete: "Social link removed successfully",
-  },
-  robot_files: {
-    insert: "File added successfully",
-    update: "File updated successfully",
-    delete: "File deleted successfully",
-  },
-  robot_file_ratings: {
-    insert: "Rating submitted successfully",
-    update: "Rating updated successfully",
-    delete: "Rating removed successfully",
-  },
-  profiles: {
-    insert: "Profile created successfully",
-    update: "Profile updated successfully",
-    delete: "Profile deleted successfully",
-  },
-};
-
-// Get success message for operation
-function getSuccessMessage(operation: string, tableName: string): string {
-  return (
-    successMessages[tableName]?.[operation] ||
-    `${tableName.slice(0, -1)} ${operation}d successfully!`
-  );
-}
-
-// Wrap query result with error handling
-function wrapQueryResult(
-  promise: Promise<any>,
-  operation: string,
-  tableName: string
-) {
-  const originalThen = promise.then.bind(promise);
-
-  promise.then = function (onFulfilled, onRejected) {
-    return originalThen((result) => {
-      if (result.error) {
-        const errorMessage = formatError(result.error, operation, tableName);
-        toast.error(errorMessage);
-
-        // Log for debugging in development
-        if (process.env.NODE_ENV === "development") {
-          console.error(
-            `🔴 ${operation} failed for ${tableName}:`,
-            result.error
-          );
-        }
-      } else {
-        // Show success toast for mutation operations
-        if (["insert", "update", "delete"].includes(operation)) {
-          const successMessage = getSuccessMessage(operation, tableName);
-          toast.success(successMessage);
-
-          // Log for debugging in development
-          if (process.env.NODE_ENV === "development") {
-            console.log(
-              `✅ ${operation} succeeded for ${tableName}:`,
-              result.data
-            );
-          }
-        }
-      }
-
-      return onFulfilled ? onFulfilled(result) : result;
-    }, onRejected);
-  };
-
-  return promise;
-}
-
-// Create the enhanced Supabase client with Proxy
-export const supabase = new Proxy(supabaseClient, {
-  get(target, prop) {
-    if (prop === "from") {
-      return function (table: string) {
-        const tableClient = target.from(table);
-
-        // Proxy the table client to intercept operations
-        return new Proxy(tableClient, {
-          get(tableTarget, tableProp) {
-            const original = tableTarget[tableProp as keyof typeof tableTarget];
-
-            // Intercept mutation operations
-            if (
-              ["insert", "update", "delete"].includes(tableProp as string) &&
-              typeof original === "function"
-            ) {
-              return function (...args: any[]) {
-                const query = (original as (...args: any[]) => any).apply(
-                  tableTarget,
-                  args
-                );
-                return wrapQueryResult(query, tableProp as string, table);
-              };
-            }
-
-            return original;
-          },
-        });
-      };
-    }
-
-    return target[prop as keyof typeof target];
-  },
-});
 
 export type Database = {
   public: {
@@ -450,3 +272,195 @@ export type Database = {
     };
   };
 };
+
+// --- HMR-Safe Singleton Logic ---
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+// Enhance the global scope to store the Supabase client
+declare global {
+  var supabase_client: SupabaseClient<Database> | undefined;
+}
+
+function getSupabaseClient() {
+  // If the client already exists on the global object (and we're in development), reuse it.
+  if (process.env.NODE_ENV === "development" && global.supabase_client) {
+    return global.supabase_client;
+  }
+
+  // Otherwise, create a new client.
+  const client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      debug: process.env.NODE_ENV === "development",
+    },
+    global: {
+      headers: {
+        "x-client-info": "robotsthatexist-web",
+      },
+    },
+  });
+
+  // In development, cache the client on the global object.
+  if (process.env.NODE_ENV === "development") {
+    global.supabase_client = client;
+  }
+
+  return client;
+}
+
+// Get the single, memoized instance of the base Supabase client
+const supabaseClient = getSupabaseClient();
+
+// --- Toast Notification Logic  ---
+
+function formatError(error: any, operation: string, tableName: string): string {
+  if (error.code) {
+    switch (error.code) {
+      case "23505":
+        return `This ${tableName.slice(
+          0,
+          -1
+        )} already exists. Please use different values.`;
+      case "23503":
+        return `Invalid reference. Please check the related data.`;
+      case "42P01":
+        return `Database table not found. Please contact support.`;
+      case "PGRST301":
+        return `Permission denied. You don't have access to perform this action.`;
+      case "PGRST116":
+        return `No data found matching your request.`;
+      case "PGRST204":
+        return `No results found.`;
+      default:
+        return `Database error: ${error.message || "Unknown error"}`;
+    }
+  }
+
+  if (
+    error.message?.includes("JWT expired") ||
+    error.message?.includes("Invalid JWT")
+  ) {
+    return `Your session has expired. Please sign in again.`;
+  }
+
+  if (error.message?.includes("timeout")) {
+    return `Operation timed out. Please check your connection and try again.`;
+  }
+
+  return `Failed to ${operation} ${tableName.slice(0, -1)}. Please try again.`;
+}
+
+const successMessages: Record<string, Record<string, string>> = {
+  robots: {
+    insert: "Robot created successfully",
+    update: "Robot updated successfully",
+    delete: "Robot deleted successfully",
+  },
+  reviews: {
+    insert: "Review submitted successfully",
+    update: "Review updated successfully",
+    delete: "Review deleted successfully",
+  },
+  robot_social_links: {
+    insert: "Social link added successfully",
+    update: "Social link updated successfully",
+    delete: "Social link removed successfully",
+  },
+  robot_files: {
+    insert: "File added successfully",
+    update: "File updated successfully",
+    delete: "File deleted successfully",
+  },
+  robot_file_ratings: {
+    insert: "Rating submitted successfully",
+    update: "Rating updated successfully",
+    delete: "Rating removed successfully",
+  },
+  profiles: {
+    insert: "Profile created successfully",
+    update: "Profile updated successfully",
+    delete: "Profile deleted successfully",
+  },
+};
+
+function getSuccessMessage(operation: string, tableName: string): string {
+  return (
+    successMessages[tableName]?.[operation] ||
+    `${tableName.slice(0, -1)} ${operation}d successfully!`
+  );
+}
+
+function wrapQueryResult(
+  promise: Promise<any>,
+  operation: string,
+  tableName: string
+) {
+  const originalThen = promise.then.bind(promise);
+
+  promise.then = function (onFulfilled, onRejected) {
+    return originalThen((result) => {
+      if (result.error) {
+        const errorMessage = formatError(result.error, operation, tableName);
+        toast.error(errorMessage);
+
+        if (process.env.NODE_ENV === "development") {
+          console.error(
+            `🔴 ${operation} failed for ${tableName}:`,
+            result.error
+          );
+        }
+      } else {
+        if (["insert", "update", "delete"].includes(operation)) {
+          const successMessage = getSuccessMessage(operation, tableName);
+          toast.success(successMessage);
+
+          if (process.env.NODE_ENV === "development") {
+            console.log(
+              `✅ ${operation} succeeded for ${tableName}:`,
+              result.data
+            );
+          }
+        }
+      }
+
+      return onFulfilled ? onFulfilled(result) : result;
+    }, onRejected);
+  };
+
+  return promise;
+}
+
+// --- Enhanced Proxy Client (Final Export) ---
+
+// Create the enhanced Supabase client with Proxy, wrapping the SINGLETON instance
+export const supabase = new Proxy(supabaseClient, {
+  get(target, prop) {
+    if (prop === "from") {
+      return function (table: string) {
+        const tableClient = target.from(table);
+
+        return new Proxy(tableClient, {
+          get(tableTarget, tableProp) {
+            const original = tableTarget[tableProp as keyof typeof tableTarget];
+
+            if (
+              ["insert", "update", "delete"].includes(tableProp as string) &&
+              typeof original === "function"
+            ) {
+              return function (...args: any[]) {
+                const query = (original as (...args: any[]) => any).apply(
+                  tableTarget,
+                  args
+                );
+                return wrapQueryResult(query, tableProp as string, table);
+              };
+            }
+            return original;
+          },
+        });
+      };
+    }
+    return target[prop as keyof typeof target];
+  },
+});
