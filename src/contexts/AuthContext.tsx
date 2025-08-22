@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Handle auth events properly - avoid duplicate processing
       if (event === 'INITIAL_SESSION') {
-        // Only process INITIAL_SESSION if we haven't initialized yet
+        // Always process INITIAL_SESSION to set initial state
         if (!sessionInitialized) {
           sessionInitialized = true;
           setSession(session || false);
@@ -112,8 +112,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setProfile(null);
           }
         }
+      } else if (event === 'SIGNED_IN' && sessionInitialized) {
+        // If we get SIGNED_IN right after INITIAL_SESSION with same user, skip duplicate processing
+        const currentUserId = user?.id;
+        const newUserId = session?.user?.id;
+        
+        if (currentUserId === newUserId && session) {
+          // Same user, just update session silently (server validation completed)
+          setSession(session);
+          console.log('Auth: Server validation completed for existing session');
+          return;
+        }
+        
+        // Different user or new login, process normally
+        setSession(session || false);
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          const profileData = await fetchProfile(session.user.id);
+          if (mounted) {
+            setProfile(profileData);
+          }
+        } else {
+          setProfile(null);
+        }
       } else {
-        // Process all other auth events (SIGNED_IN, SIGNED_OUT, etc.)
+        // Process all other auth events (SIGNED_OUT, TOKEN_REFRESHED, etc.)
         setSession(session || false);
         setUser(session?.user ?? null);
 
