@@ -12,22 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Bot,
-  User,
-  Settings,
-  LogOut,
-  Shield,
-  BotIcon,
-  PlusCircle,
-  Plus,
-  Menu,
-  X,
-} from "lucide-react";
+import { Bot, LogOut, Shield, BotIcon, Plus, Menu, X } from "lucide-react";
 import { RobotSearch } from "@/components/RobotSearch";
 
 export function Header() {
-  const { user, profile, signOut, loading } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -110,9 +99,7 @@ export function Header() {
             )}
           </Button>
 
-          {loading ? (
-            <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
-          ) : user && profile ? (
+          {user && profile ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
