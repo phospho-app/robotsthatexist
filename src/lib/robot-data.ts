@@ -10,53 +10,69 @@ export interface RobotData extends Omit<RobotCardData, 'status'> {
 
 // Fetcher function to get all robots from database
 const fetchAllRobots = async (): Promise<RobotData[]> => {
-  const { data, error } = await supabase
-    .from('robots')
-    .select(`
-      *,
-      profiles (
-        username,
-        full_name,
-        avatar_url,
-        github_username
-      ),
-      robot_social_links (
+  try {
+    const { data, error } = await supabase
+      .from('robots')
+      .select(`
         id,
-        platform,
-        url,
-        title
-      )
-    `)
-    .eq('status', 'published')
-    .order('created_at', { ascending: false })
-    .limit(1000);
+        name,
+        slug,
+        description,
+        github_url,
+        image_url,
+        tags,
+        created_at,
+        updated_at,
+        profiles (
+          username,
+          full_name,
+          avatar_url,
+          github_username
+        ),
+        robot_social_links (
+          id,
+          platform,
+          url,
+          title
+        ),
+        reviews (
+          rating
+        )
+      `)
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(500);
 
-  if (error) {
-    throw new Error(`Failed to fetch robots: ${error.message}`);
+    if (error) {
+      console.error('Error fetching robots:', error);
+      throw error;
+    }
+    
+    return processRobotData(data || []);
+  } catch (error) {
+    console.error('Failed to fetch robots:', error);
+    throw error;
   }
+};
 
-  const robots = data || [];
+const processRobotData = (robots: any[]): RobotData[] => {
+  // Calculate average rating for each robot from joined review data
+  const robotsWithRatings = robots.map((robot) => {
+    let average_rating = 0;
+    if (robot.reviews && robot.reviews.length > 0) {
+      const total = robot.reviews.reduce((sum: number, review: { rating: number }) => sum + review.rating, 0);
+      average_rating = Math.round((total / robot.reviews.length) * 10) / 10;
+    }
 
-  // Get rating stats for each robot
-  const robotsWithRatings = await Promise.all(
-    robots.map(async (robot) => {
-      const { data: reviews } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('robot_id', robot.id);
+    // Remove reviews from the final object since we only needed it for calculation
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { reviews, ...robotWithoutReviews } = robot;
 
-      let average_rating = 0;
-      if (reviews && reviews.length > 0) {
-        const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-        average_rating = Math.round((total / reviews.length) * 10) / 10;
-      }
-
-      return {
-        ...robot,
-        average_rating
-      };
-    })
-  );
+    return {
+      ...robotWithoutReviews,
+      average_rating
+    };
+  });
 
   return robotsWithRatings;
 };
