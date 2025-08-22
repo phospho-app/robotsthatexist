@@ -81,7 +81,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let sessionInitialized = false;
 
+    // Set up auth state listener first
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -93,36 +95,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session ? "session exists" : "no session"
       );
 
-      setSession(session || false);
-      setUser(session?.user ?? null);
+      // Only update state if this is the first initialization or a real auth event
+      if (!sessionInitialized || event !== 'INITIAL_SESSION') {
+        sessionInitialized = true;
+        setSession(session || false);
+        setUser(session?.user ?? null);
 
-      if (session?.user) {
-        const profileData = await fetchProfile(session.user.id);
-        if (mounted) {
-          setProfile(profileData);
+        if (session?.user) {
+          const profileData = await fetchProfile(session.user.id);
+          if (mounted) {
+            setProfile(profileData);
+          }
+        } else {
+          setProfile(null);
         }
-      } else {
-        setProfile(null);
       }
     });
 
+    // Initialize auth with timeout and retry
     const initializeAuth = async () => {
+      if (sessionInitialized) return;
+      
       try {
+        // Add timeout to prevent hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Session timeout')), 10000)
+        );
+
         const {
           data: { session },
-        } = await supabase.auth.getSession();
-        if (mounted) {
+        } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        
+        if (mounted && !sessionInitialized) {
+          sessionInitialized = true;
           setSession(session || false);
+          setUser(session?.user ?? null);
+
+          if (session?.user) {
+            const profileData = await fetchProfile(session.user.id);
+            if (mounted) {
+              setProfile(profileData);
+            }
+          }
         }
       } catch (error) {
         console.error("Error getting initial session:", error);
-        if (mounted) {
+        if (mounted && !sessionInitialized) {
+          sessionInitialized = true;
           setSession(false);
         }
       }
     };
 
-    initializeAuth();
+    // Small delay to let auth state listener initialize first
+    setTimeout(initializeAuth, 100);
 
     return () => {
       mounted = false;

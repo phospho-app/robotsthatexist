@@ -12,8 +12,18 @@ const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     storageKey: 'supabase.auth.token',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-    // Enable proper multi-tab coordination by ensuring storage events are handled
-    flowType: 'pkce'
+    flowType: 'pkce',
+    // Improve multi-tab coordination
+    debug: process.env.NODE_ENV === 'development'
+  },
+  global: {
+    headers: {
+      'x-client-info': 'robotsthatexist-web'
+    }
+  },
+  // Add connection timeout
+  db: {
+    schema: 'public'
   }
 })
 
