@@ -7,7 +7,7 @@ import { withTimeoutAndRetry, swrConfig } from "@/lib/performance";
 import Image from "next/image";
 import Link from "@/components/ui/link";
 import { supabase } from "@/lib/supabase";
-import { fetchGitHubReadme, isValidGitHubUrl } from "@/lib/github";
+import { fetchGitHubReadme, isValidGitHubUrl, getRepositoryDefaultBranch } from "@/lib/github";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReviewForm } from "@/components/ReviewForm";
 import { SocialLinkContributionForm } from "@/components/SocialLinkContributionForm";
@@ -593,25 +593,67 @@ export default function RobotDetailClient({
                             if (!srcString.startsWith("http")) {
                               if (srcString.startsWith("/")) {
                                 imgSrc = `https://github.com${srcString}`;
+                              } else if (robot.github_url) {
+                                // Extract owner/repo to construct URL with correct branch
+                                const match = robot.github_url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+                                if (match) {
+                                  const [, owner, repo] = match;
+                                  const cleanRepo = repo.replace(/\.git$/, '');
+                                  
+                                  // Try both 'main' and 'master' branches for fallback
+                                  // Since this is client-side, we'll use a more pragmatic approach
+                                  // The API side already handles the branch detection properly
+                                  imgSrc = `${robot.github_url
+                                    .replace("github.com", "raw.githubusercontent.com")
+                                    .replace("/tree/", "/")
+                                    .replace("/blob/", "/")}/main/${srcString}`;
+                                  
+                                  // Create a fallback image error handler that tries 'master'
+                                  const handleImageError = (e: any) => {
+                                    if (e.target.src.includes('/main/')) {
+                                      e.target.src = e.target.src.replace('/main/', '/master/');
+                                    }
+                                  };
+                                  
+                                  // Check if the image is a GIF (animated images)
+                                  const isGif = imgSrc.toLowerCase().endsWith('.gif');
+
+                                  if (isGif) {
+                                    // Use regular img tag for GIFs to preserve animation
+                                    return (
+                                      <img
+                                        {...rest}
+                                        src={imgSrc}
+                                        alt={alt || ""}
+                                        className="max-w-full h-auto rounded-lg"
+                                        loading="lazy"
+                                        onError={handleImageError}
+                                      />
+                                    );
+                                  }
+
+                                  return (
+                                    <Image
+                                      {...rest}
+                                      src={imgSrc}
+                                      alt={alt || ""}
+                                      width={800}
+                                      height={600}
+                                      className="max-w-full h-auto rounded-lg"
+                                      loading="lazy"
+                                      onError={handleImageError}
+                                    />
+                                  );
+                                } else {
+                                  imgSrc = srcString;
+                                }
                               } else {
-                                imgSrc = robot.github_url
-                                  ? `${robot.github_url
-                                      .replace(
-                                        "github.com",
-                                        "raw.githubusercontent.com"
-                                      )
-                                      .replace("/tree/", "/")
-                                      .replace(
-                                        "/blob/",
-                                        "/"
-                                      )}/main/${srcString}`
-                                  : srcString;
+                                imgSrc = srcString;
                               }
                             }
 
                             // Clean up malformed URLs (remove trailing parentheses, brackets, etc.)
                             imgSrc = imgSrc.replace(/[)\]}]+$/, '');
-
 
                             // Check if the image is a GIF (animated images)
                             const isGif = imgSrc.toLowerCase().endsWith('.gif');
@@ -670,13 +712,15 @@ export default function RobotDetailClient({
                               );
                             }
                             
-                            const linkHref = href?.startsWith("http")
-                              ? href
-                              : href?.startsWith("/")
-                              ? `https://github.com${href}`
-                              : robot.github_url && href
-                              ? `${robot.github_url}/blob/main/${href}`
-                              : href;
+                            let linkHref = href;
+                            if (href && !href.startsWith("http")) {
+                              if (href.startsWith("/")) {
+                                linkHref = `https://github.com${href}`;
+                              } else if (robot.github_url && href) {
+                                // Use main as default, but the actual branch detection is handled server-side
+                                linkHref = `${robot.github_url}/blob/main/${href}`;
+                              }
+                            }
                             return (
                               <a
                                 {...rest}

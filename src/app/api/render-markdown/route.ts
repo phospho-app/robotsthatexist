@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getRepositoryDefaultBranch } from '@/lib/github'
 
 // Utility function to rewrite relative URLs in GitHub HTML
-function rewriteRelativeUrls(html: string, repoUrl: string): string {
+async function rewriteRelativeUrls(html: string, repoUrl: string): Promise<string> {
   if (!repoUrl) return html;
   
   // Extract owner, repo, and branch from GitHub URL
@@ -9,8 +10,12 @@ function rewriteRelativeUrls(html: string, repoUrl: string): string {
   if (!match) return html;
   
   const [, owner, repo] = match;
-  const baseUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/`;
-  const blobUrl = `https://github.com/${owner}/${repo}/blob/main/`;
+  
+  // Get the actual default branch instead of hardcoding 'main'
+  const defaultBranch = await getRepositoryDefaultBranch(repoUrl);
+  
+  const baseUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${defaultBranch}/`;
+  const blobUrl = `https://github.com/${owner}/${repo}/blob/${defaultBranch}/`;
   
   return html
     // Fix relative image sources
@@ -77,7 +82,7 @@ export async function POST(request: NextRequest) {
     
     // Rewrite relative URLs if we have a repository URL
     if (repoUrl) {
-      html = rewriteRelativeUrls(html, repoUrl)
+      html = await rewriteRelativeUrls(html, repoUrl)
     }
     
     return NextResponse.json({ html })
